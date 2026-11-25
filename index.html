@@ -1,0 +1,2623 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101112">
+<title>حسابات | ACCOUNTS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Charcoal and gold. A deliberate single dark theme. */
+:root{
+  color-scheme:dark;
+  --bg:#101112; --surface:#18191b; --raised:#202225;
+  --line:#2e3033; --gold:#cfa84e; --gold-soft:#e8d29a; --gold-line:#6b5a2f;
+  --text:#f1eee6; --muted:#aaa69c; --ok:#7fc59a; --bad:#ee8f84;
+  --font:"IBM Plex Sans Arabic","SF Arabic","Geeza Pro","Noto Sans Arabic","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.7 var(--font)}
+[hidden]{display:none!important}
+h1,h2,p,dl,dd,ul{margin:0}
+h1{font-size:1.45rem;line-height:1.4}
+h2{font-size:1rem;font-weight:600;color:var(--gold-soft)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--gold-soft);outline-offset:2px}
+main:focus{outline:none}
+svg{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.skip{position:absolute;inset-inline-start:8px;top:-100px;background:var(--raised);padding:8px 12px;z-index:30}
+.skip:focus{top:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--gold-line);background:var(--bg)}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand strong{font-size:1.2rem;font-weight:700;color:var(--gold);line-height:1.5}
+.brand small,.muted,.stage{color:var(--muted);font-size:.875rem}
+.btn{min-height:48px;padding:8px 20px;border:1px solid var(--line);border-radius:10px;background:var(--raised);color:var(--text);font:600 .95rem var(--font);cursor:pointer;touch-action:manipulation}
+.btn:hover{border-color:var(--gold-line)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:#17130a}
+.btn.lang{min-width:56px;border-color:var(--gold-line);color:var(--gold-soft)}
+main{padding:16px;min-width:0}
+main>section{display:flex;flex-direction:column;gap:16px}
+.notice{padding:10px 14px;margin-bottom:16px;border:1px solid var(--gold-line);border-radius:10px;color:var(--gold-soft);font-size:.9rem}
+.notice.bad{border-color:var(--bad);color:var(--bad)}
+.page-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.chip{border:1px solid var(--line);border-radius:99px;padding:2px 12px;font-size:.8rem;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+/* The cash balance is the one framed element: cash is the only real money on screen. */
+.vault{border:1px solid var(--gold-line);outline:1px solid var(--gold-line);outline-offset:-6px;border-radius:14px;padding:24px 20px;background:var(--surface)}
+.balance{font-size:2.8rem;line-height:1.3;color:var(--gold);font-variant-numeric:tabular-nums}
+.balance .cur{font-size:1rem;color:var(--muted)}
+.formula{color:var(--muted);font-size:.875rem;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.rows .row,.flows .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.flows .row:first-child{border-top:0}
+dt{min-width:0}
+dd{display:flex;flex-direction:column;align-items:flex-end;line-height:1.3;flex:none}
+dd b{font-size:1.25rem}
+dd small{color:var(--muted);font-size:.75rem}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.plan{list-style:none;padding:0}
+.plan li{padding:12px 0;border-top:1px solid var(--line)}
+label{font-weight:500}
+input{min-height:48px;width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:600 1.15rem var(--font)}
+input[aria-invalid="true"]{border-color:var(--bad)}
+.status:empty{display:none}
+.status[data-state="ok"]{color:var(--ok)}
+.status[data-state="bad"]{color:var(--bad)}
+dialog{width:min(420px,calc(100% - 32px));border:1px solid var(--gold-line);border-radius:14px;background:var(--surface);color:var(--text);padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.72)}
+.actions{display:flex;gap:12px;margin-top:20px}
+.actions .btn{flex:1}
+#more-links a,#sidebar-links a{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 12px;border-radius:10px;color:var(--muted)}
+#more-links a[aria-current],#sidebar-links a[aria-current]{background:var(--raised);color:var(--gold-soft)}
+.sheet .btn{width:100%;margin-top:12px}
+.toast{position:fixed;left:16px;right:16px;margin-inline:auto;max-width:420px;bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:12px 16px;border:1px solid var(--ok);border-radius:10px;background:var(--raised);text-align:center;z-index:20;pointer-events:none}
+.toast:empty{display:none}
+.toast[data-state="bad"]{border-color:var(--bad)}
+.noscript{margin:24px 16px;padding:16px;border:1px solid var(--bad);border-radius:10px;text-align:center}
+html:not(.ready) .app{visibility:hidden}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+/* Names and accounts */
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+select{min-height:48px;width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:500 1rem var(--font)}
+.filters{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.btn:disabled{opacity:.5;cursor:default}
+.user{overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start}
+.person{gap:4px}
+.person:hover{border-color:var(--gold-line)}
+.person strong{font-size:1.15rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip.type{border-color:var(--gold-line);color:var(--gold-soft)}
+.back{display:inline-flex;align-items:center;align-self:flex-start;min-height:44px;color:var(--gold-soft);text-decoration:underline}
+.page-head h1{min-width:0}
+.account{display:flex;flex-direction:column;gap:10px}
+.account>div:first-child{display:flex;flex-direction:column;min-width:0}
+.row-actions{display:flex;flex-wrap:wrap;gap:8px}
+.row-actions .btn{flex:1}
+summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--gold-soft);font-weight:600}
+.history{list-style:none;margin:0;padding:0}
+.history li{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.history time{flex-basis:100%}
+fieldset{margin:0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;min-width:0}
+.check{display:flex;align-items:center;gap:12px;min-height:48px}
+.check input{width:22px;height:22px;min-height:0;accent-color:var(--gold);flex:none}
+a.count{display:flex;align-items:center;justify-content:center;min-width:48px;min-height:44px;color:var(--gold-soft);text-decoration:underline}
+dialog{max-height:calc(100dvh - 32px);overflow:auto}
+#form-dialog .actions{margin-top:0}
+/* Money screens */
+textarea{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:500 1rem var(--font);resize:vertical}
+input[type="date"]{min-width:0;-webkit-appearance:none;appearance:none}
+.money{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+.money small{color:var(--muted);font-weight:400;font-size:.75em}
+.rows .row.total{border-top:1px solid var(--gold-line)}
+.row.total dt,.row.total .money{color:var(--gold);font-weight:700}
+.rows dd{max-width:65%}
+.count b{font-variant-numeric:tabular-nums;font-size:1.05rem}
+.balance{overflow-wrap:anywhere}
+.history li.entry{flex-direction:column;align-items:stretch;gap:6px}
+.entry-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.entry.reversed .entry-head{opacity:.6;text-decoration:line-through}
+.chip.warn{border-color:var(--bad);color:var(--bad)}
+.history .chips{align-items:center}
+.account-link{display:flex;flex-direction:column;justify-content:center;min-height:44px;min-width:0}
+.account-link strong{color:var(--gold-soft);text-decoration:underline}
+a.btn{display:flex;align-items:center;justify-content:center;text-align:center}
+.context{display:flex;flex-direction:column;gap:2px}
+.pair,.period{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.btn.file{display:flex;align-items:center;justify-content:center}
+.btn.file:focus-within{outline:2px solid var(--gold-soft)}
+.visually-hidden{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.btn.file input{min-height:0}
+.note{margin:0}
+details>.btn{margin-top:8px;width:100%}
+/* Ledger: a table on wide screens, stacked cards on phones */
+.ledger-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}
+.ledger-filters .wide{grid-column:1/-1}
+.export-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.export-bar .btn{padding-inline:6px}
+.ledger-totals{gap:0}
+.table-wrap{min-width:0}
+table.ledger,.ledger tbody,.ledger tr,.ledger td{display:block;width:100%}
+.ledger thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.ledger tr{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;margin-bottom:12px}
+.ledger td{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:8px;padding:6px 0;align-items:center}
+.ledger td::before{content:attr(data-label);color:var(--muted);font-size:.85rem}
+.ledger td>div{min-width:0;overflow-wrap:anywhere}
+.ledger .sub{font-size:.85rem}
+.ledger .effect{unicode-bidi:isolate}
+.ledger tr.st-reversed .money,.ledger tr.st-cancelled .money{text-decoration:line-through;opacity:.65}
+.history .who{flex-basis:100%}
+.print-only{display:none}
+</style>
+<style>
+/* Phone first: bottom tab bar. Desktop: sidebar. */
+.sidebar{display:none}
+main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:10;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding:4px max(4px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
+.tabbar a,.tabbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;border:0;border-radius:10px;background:none;color:var(--muted);font:500 .74rem var(--font);cursor:pointer}
+.tabbar [aria-current],.tabbar .active{color:var(--gold);background:var(--raised)}
+@media (min-width:640px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flows{display:grid;grid-template-columns:1fr 1fr;column-gap:32px}
+  .flows .row{border-top:0}
+}
+@media (min-width:960px){
+  .app{display:grid;grid-template-columns:260px minmax(0,1fr);grid-template-rows:auto 1fr;min-height:100vh}
+  .topbar{grid-column:1/-1;padding-inline:24px}
+  .sidebar{display:flex;flex-direction:column;justify-content:space-between;gap:16px;padding:16px 12px;border-inline-end:1px solid var(--line)}
+  .tabbar{display:none}
+  main{padding:24px 32px 48px;width:100%;max-width:1040px}
+  .toast{bottom:24px}
+}
+@media (min-width:640px){
+  .filters{grid-template-columns:2fr 1fr}
+  .account{flex-direction:row;justify-content:space-between;align-items:center}
+  .row-actions .btn{flex:none}
+}
+@media (min-width:640px){
+  .period{grid-template-columns:repeat(4,minmax(0,1fr));align-items:end}
+  .account{flex-wrap:wrap}
+  .account .row-actions{flex-basis:100%}
+}
+@media (min-width:640px){
+  .ledger-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media screen and (min-width:1200px){
+  [data-page="ledger"]:not([hidden]){width:100%}
+  table.ledger{display:table;border-collapse:collapse;table-layout:fixed;font-size:.88rem}
+  .ledger thead{position:static;display:table-header-group;width:auto;height:auto;clip-path:none}
+  .ledger tbody{display:table-row-group}
+  .ledger tr{display:table-row;background:none;border:0}
+  .ledger th,.ledger td{display:table-cell;width:auto;padding:10px 6px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top;overflow-wrap:anywhere}
+  .ledger th{color:var(--gold-soft);font-weight:600}
+  .ledger td::before{content:none}
+  .ledger .money{white-space:normal}
+  main:has([data-page="ledger"]:not([hidden])){max-width:1500px}
+}
+@media print{
+  :root{color-scheme:light;--bg:#fff;--surface:#fff;--raised:#fff;--line:#999;--gold:#000;--gold-soft:#000;--gold-line:#999;--text:#000;--muted:#333;--bad:#000}
+  @page{size:A4 landscape;margin:12mm}
+  body{font-size:10pt}
+  .topbar,.sidebar,.tabbar,.notice,.no-print,.toast,.skip,.page-head .chip{display:none!important}
+  .app{display:block}
+  main{padding:0;max-width:none}
+  .print-only{display:block}
+  table.ledger{display:table;border-collapse:collapse;width:100%}
+  .ledger thead{position:static;display:table-header-group;width:auto;height:auto;clip-path:none}
+  .ledger tbody{display:table-row-group}
+  .ledger tr{display:table-row;border:0;break-inside:avoid}
+  .ledger th,.ledger td{display:table-cell;width:auto;padding:4px;border:1px solid #999;text-align:start;vertical-align:top}
+  .ledger td::before{content:none}
+  .ledger a{color:#000;text-decoration:none;min-height:0}
+  .ledger strong{color:#000!important;text-decoration:none!important}
+}
+</style>
+</head>
+<body>
+<noscript><p class="noscript">يلزم فتح الملف في متصفح يشغّل JavaScript.<br><span dir="ltr">Open this file in a browser with JavaScript enabled.</span></p></noscript>
+<div class="app">
+<a class="skip" href="#main" data-i18n="a11y.skip"></a>
+<header class="topbar">
+  <div class="brand"><strong data-i18n="app.name"></strong><small data-i18n="app.tagline"></small></div>
+  <button type="button" id="lang-btn" class="btn lang" data-i18n="lang.button" data-i18n-aria="lang.switch"></button>
+</header>
+<nav class="sidebar" data-i18n-aria="a11y.mainNav"><div id="sidebar-links"></div><p class="stage" data-i18n="app.stage"></p></nav>
+<main id="main" tabindex="-1">
+<p id="storage-banner" class="notice bad" data-i18n="prefs.storageBad" hidden></p>
+<p id="data-banner" class="notice bad" role="alert" hidden></p>
+<p class="notice" data-i18n="state.noData"></p>
+
+<section data-page="dashboard">
+  <header class="page-head"><h1 data-i18n="dash.title"></h1><span class="chip" data-i18n="app.stage"></span></header>
+  <div class="vault">
+    <h2 data-i18n="dash.cash"></h2>
+    <p class="balance"><a href="#cash"><b data-total="balance">—</b></a> <span class="cur" data-i18n="cur.sar"></span></p>
+    <p class="formula"><span data-i18n="dash.cashFormula"></span></p>
+    <dl class="flows"><div class="row"><dt data-i18n="dash.received"></dt><dd><a class="count" href="#cash"><b data-total="received">—</b></a></dd></div><div class="row"><dt data-i18n="dash.paid"></dt><dd><a class="count" href="#cash"><b data-total="paid">—</b></a></dd></div></dl>
+  </div>
+  <p class="muted" data-i18n="dash.includesArchived"></p>
+  <div class="grid">
+    <section class="card"><h2 data-i18n="dash.agreements"></h2><dl class="rows"><div class="row"><dt data-i18n="dash.agreed"></dt><dd><a class="count" href="#accounts"><b data-total="agreed">—</b></a></dd></div><div class="row"><dt data-i18n="dash.remaining"></dt><dd><a class="count" href="#accounts"><b data-total="remaining">—</b></a></dd></div></dl></section>
+    <section class="card"><h2 data-i18n="dash.monthly"></h2><dl class="rows"><div class="row"><dt data-i18n="dash.dues"></dt><dd><a class="count" href="#monthly"><b data-total="dues">—</b></a></dd></div><div class="row"><dt data-i18n="dash.shortfall"></dt><dd><a class="count" href="#monthly"><b data-total="shortfall">—</b></a></dd></div></dl></section>
+    <section class="card"><h2 data-i18n="dash.directory"></h2><dl class="rows"><div class="row"><dt data-i18n="dash.names"></dt><dd><a class="count" href="#accounts"><b id="count-names">—</b></a></dd></div><div class="row"><dt data-i18n="dash.count"></dt><dd><a class="count" href="#accounts"><b id="count-accounts">—</b></a></dd></div></dl></section>
+    <section class="card"><h2 data-i18n="dash.charts"></h2><p class="muted" data-i18n="dash.chartsNote"></p></section>
+  </div>
+</section>
+
+<section data-page="accounts" hidden>
+  <header class="page-head"><h1 data-i18n="nav.accounts"></h1><button type="button" id="add-person-btn" class="btn primary" data-i18n="people.add" disabled></button></header>
+  <div class="filters">
+    <div><label for="people-search" data-i18n="people.search"></label><input type="search" id="people-search" autocomplete="off" dir="auto"></div>
+    <div><label for="people-filter" data-i18n="people.filter"></label><select id="people-filter">
+      <option value="all" data-i18n="filter.all"></option><option value="agreement" data-i18n="type.agreement"></option>
+      <option value="monthly" data-i18n="type.monthly"></option><option value="archived" data-i18n="filter.archived"></option></select></div>
+  </div>
+  <p id="people-count" class="muted" role="status"></p>
+  <div id="people-list" class="grid"></div>
+</section>
+<section data-page="person" hidden><div id="person-view" class="stack"></div></section>
+
+<section data-page="account" hidden><div id="account-view" class="stack"></div></section>
+
+<section data-page="monthly" hidden>
+  <header class="page-head"><h1 data-i18n="nav.monthly"></h1></header>
+  <div class="period">
+    <div><label for="p-month" data-i18n="field.month"></label><select id="p-month"></select></div>
+    <div><label for="p-year" data-i18n="field.year"></label><select id="p-year"></select></div>
+    <button type="button" id="p-prev" class="btn" data-i18n="months.prev"></button>
+    <button type="button" id="p-next" class="btn" data-i18n="months.next"></button>
+  </div>
+  <button type="button" id="generate-btn" class="btn primary" data-i18n="months.generate" disabled></button>
+  <div id="months-view" class="stack"></div>
+</section>
+
+<section data-page="cash" hidden>
+  <header class="page-head"><h1 data-i18n="nav.cash"></h1></header>
+  <div class="pair"><button type="button" id="cash-in-btn" class="btn primary" data-i18n="money.cashIn" disabled></button>
+    <button type="button" id="cash-out-btn" class="btn" data-i18n="money.cashOut" disabled></button></div>
+  <div id="cash-view" class="stack"></div>
+  <details class="card"><summary data-i18n="cash.rules"></summary><ul class="plan"><li data-i18n="cash.r1"></li><li data-i18n="cash.r2"></li><li data-i18n="cash.r3"></li><li data-i18n="cash.r4"></li></ul></details>
+</section>
+
+<section data-page="ledger" hidden>
+  <header class="page-head"><h1 data-i18n="nav.ledger"></h1></header>
+  <p id="print-head" class="print-only"></p>
+  <div class="ledger-filters no-print">
+    <div class="wide"><label for="l-search" data-i18n="ledger.search"></label><input type="search" id="l-search" autocomplete="off" dir="auto"></div>
+    <div><label for="l-person" data-i18n="field.name"></label><select id="l-person"></select></div>
+    <div><label for="l-kind" data-i18n="ledger.kind"></label><select id="l-kind"></select></div>
+    <div><label for="l-from" data-i18n="ledger.from"></label><input type="date" id="l-from" dir="ltr"></div>
+    <div><label for="l-to" data-i18n="ledger.to"></label><input type="date" id="l-to" dir="ltr"></div>
+    <div><label for="l-sort" data-i18n="ledger.sort"></label><select id="l-sort"><option value="newest" data-i18n="sort.newest"></option><option value="oldest" data-i18n="sort.oldest"></option><option value="largest" data-i18n="sort.largest"></option><option value="smallest" data-i18n="sort.smallest"></option></select></div>
+    <button type="button" id="l-clear" class="btn" data-i18n="ledger.clear"></button>
+  </div>
+  <div class="export-bar no-print"><button type="button" id="l-csv" class="btn" data-i18n="ledger.csv" disabled></button><button type="button" id="l-xlsx" class="btn" data-i18n="ledger.xlsx" disabled></button><button type="button" id="l-print" class="btn" data-i18n="ledger.print" disabled></button></div>
+  <p id="l-count" class="muted" role="status"></p>
+  <div id="ledger-view" class="stack"></div>
+  <details class="card no-print"><summary data-i18n="ledger.audit"></summary><div id="audit-view" class="stack"></div></details>
+</section>
+
+<section data-page="reports" hidden>
+  <header class="page-head"><h1 data-i18n="nav.reports"></h1><span class="chip" data-i18n="state.phase" data-n="5"></span></header>
+  <div class="card"><h2 data-i18n="state.planned"></h2><ul class="plan"><li data-i18n="reports.f1"></li><li data-i18n="reports.f2"></li><li data-i18n="reports.f3"></li><li data-i18n="reports.f4"></li></ul></div>
+</section>
+<section data-page="backup" hidden>
+  <header class="page-head"><h1 data-i18n="nav.backup"></h1></header>
+  <p class="notice" data-i18n="backup.private"></p>
+  <div class="grid">
+    <div class="card"><h2 data-i18n="backup.exportTitle"></h2><p id="last-export" class="muted"></p>
+      <button type="button" id="export-btn" class="btn primary" data-i18n="backup.download"></button>
+      <button type="button" id="copy-btn" class="btn" data-i18n="backup.copy"></button>
+      <p id="export-result" class="status" role="status"></p>
+      <textarea id="export-text" dir="ltr" rows="6" readonly hidden></textarea></div>
+    <div class="card"><h2 data-i18n="backup.importTitle"></h2><p class="muted" data-i18n="backup.importHelp"></p>
+      <label class="btn file"><span data-i18n="backup.choose"></span><input type="file" id="import-file" class="visually-hidden" accept=".json,application/json"></label>
+      <details><summary data-i18n="backup.paste"></summary><label for="import-text" data-i18n="backup.pasteLabel"></label>
+        <textarea id="import-text" dir="ltr" rows="6"></textarea><button type="button" id="inspect-btn" class="btn" data-i18n="backup.inspect"></button></details>
+      <p id="import-result" class="status" role="status"></p><div id="import-preview" class="stack"></div></div>
+    <div class="card"><h2 data-i18n="backup.recoveryTitle"></h2><p class="muted" data-i18n="backup.recoveryHelp"></p><div id="recovery-view" class="stack"></div></div>
+  </div>
+</section>
+
+<section data-page="prefs" hidden>
+  <header class="page-head"><h1 data-i18n="nav.prefs"></h1></header>
+  <div class="grid">
+    <div class="card"><h2 data-i18n="lang.title"></h2><p class="muted" data-i18n="lang.current"></p></div>
+    <div class="card"><h2 data-i18n="prefs.storage"></h2><p id="storage-status" class="status"></p><p id="persist-status" class="muted"></p><p class="muted" data-i18n="prefs.noSync"></p>
+      <button type="button" id="check-btn" class="btn" data-i18n="prefs.runCheck"></button>
+      <p id="check-result" class="status" role="status"></p></div>
+    <form id="amount-form" class="card" novalidate><h2 data-i18n="amount.title"></h2><p class="muted" data-i18n="amount.help"></p>
+      <label for="amount-input" data-i18n="amount.label"></label>
+      <input id="amount-input" inputmode="decimal" autocomplete="off" dir="ltr" aria-describedby="amount-result">
+      <button type="submit" class="btn primary" data-i18n="amount.button"></button>
+      <p id="amount-result" class="status" role="status"></p></form>
+    <div class="card"><h2 data-i18n="reset.title"></h2><p class="muted" data-i18n="reset.help"></p>
+      <button type="button" id="reset-btn" class="btn" data-i18n="reset.button"></button></div>
+  </div>
+</section>
+</main>
+<nav id="tabbar" class="tabbar" data-i18n-aria="a11y.mainNav"></nav>
+</div>
+
+<dialog id="more-dialog" class="sheet">
+  <div id="more-links"></div>
+  <button type="button" id="more-close" class="btn" data-i18n="dialog.close"></button>
+</dialog>
+<dialog id="confirm-dialog" aria-labelledby="confirm-title">
+  <h2 id="confirm-title"></h2><p id="confirm-message"></p>
+  <div class="actions"><button type="button" id="confirm-no" class="btn" data-i18n="dialog.cancel" autofocus></button>
+  <button type="button" id="confirm-yes" class="btn primary" data-i18n="dialog.confirm"></button></div>
+</dialog>
+<dialog id="form-dialog" aria-labelledby="form-title">
+  <form id="entity-form" class="stack" novalidate>
+    <h2 id="form-title"></h2>
+    <div id="field-name"><label for="in-name" data-i18n="field.name"></label><input id="in-name" maxlength="80" autocomplete="off" dir="auto"></div>
+    <fieldset id="field-types"><legend data-i18n="field.types"></legend>
+      <label class="check"><input type="checkbox" id="in-agreement"><span data-i18n="type.agreement"></span></label>
+      <label class="check"><input type="checkbox" id="in-monthly"><span data-i18n="type.monthly"></span></label></fieldset>
+    <div id="field-type"><label for="in-type" data-i18n="field.type"></label><select id="in-type"><option value="agreement" data-i18n="type.agreement"></option><option value="monthly" data-i18n="type.monthly"></option></select></div>
+    <div id="field-label"><label for="in-label" data-i18n="field.label"></label><input id="in-label" maxlength="60" autocomplete="off" dir="auto"></div>
+    <p id="form-error" class="status" role="alert"></p>
+    <div class="actions"><button type="button" id="form-cancel" class="btn" data-i18n="dialog.cancel"></button><button type="submit" id="form-save" class="btn primary" data-i18n="dialog.save"></button></div>
+  </form>
+</dialog>
+<dialog id="money-dialog" aria-labelledby="money-title">
+  <form id="money-form" class="stack" novalidate>
+    <h2 id="money-title"></h2><div id="money-context" class="context"></div>
+    <div id="mf-who" class="stack"><div><label for="m-person" data-i18n="field.name"></label><select id="m-person"></select></div><div><label for="m-account" data-i18n="ledger.account"></label><select id="m-account"></select></div>
+      <p id="m-waiting" class="notice" data-i18n="money.waiting" hidden></p></div>
+    <div id="mf-period" class="pair"><div><label for="m-month" data-i18n="field.month"></label><select id="m-month"></select></div><div><label for="m-year" data-i18n="field.year"></label><select id="m-year"></select></div></div>
+    <div id="mf-amount"><label for="m-amount" data-i18n="amount.label"></label><input id="m-amount" inputmode="decimal" autocomplete="off" dir="ltr"><p id="m-limit" class="muted"></p></div>
+    <div id="mf-date"><label for="m-date" id="m-date-label"></label><input type="date" id="m-date" dir="ltr"></div>
+    <fieldset id="mf-cash"><legend data-i18n="money.cashQuestion"></legend>
+      <label class="check"><input type="radio" name="m-cash" id="m-cash-yes" value="yes"><span data-i18n="money.cashYes"></span></label>
+      <label class="check"><input type="radio" name="m-cash" id="m-cash-no" value="no"><span data-i18n="money.cashNo"></span></label></fieldset>
+    <div id="mf-text" class="stack"><div><label for="m-desc" data-i18n="field.descriptionOpt"></label><input id="m-desc" maxlength="200" dir="auto" autocomplete="off"></div>
+      <div><label for="m-notes" data-i18n="field.notesOpt"></label><textarea id="m-notes" maxlength="1000" rows="2" dir="auto"></textarea></div></div>
+    <div id="mf-reason"><label for="m-reason" data-i18n="field.reason"></label><input id="m-reason" maxlength="200" dir="auto" autocomplete="off"></div>
+    <p id="money-error" class="status" role="alert"></p>
+    <label id="mf-dup" class="check"><input type="checkbox" id="m-dup"><span data-i18n="money.confirmDuplicate"></span></label>
+    <div class="actions"><button type="button" id="money-cancel" class="btn" data-i18n="dialog.cancel"></button><button type="submit" id="money-save" class="btn primary" data-i18n="dialog.save"></button></div>
+  </form>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* Translations. Every UI string lives here; user-entered data is never translated. */
+(function (root) {
+  'use strict';
+  const D = {
+    // key: [Arabic, English]
+    'app.name': ['حسابات | ACCOUNTS', 'ACCOUNTS'],
+    'app.tagline': ['إدارة الحسابات والكاش', 'Accounts and cash management'],
+    'app.stage': ['نسخة محلية · المرحلة 4', 'Local build · Phase 4'],
+    'a11y.skip': ['انتقل إلى المحتوى', 'Skip to content'],
+    'a11y.mainNav': ['القائمة الرئيسية', 'Main menu'],
+    'lang.button': ['EN', 'AR'],
+    'lang.switch': ['التبديل إلى الإنجليزية', 'Switch to Arabic'],
+    'lang.changed': ['تم تغيير اللغة إلى العربية', 'Language changed to English'],
+    'lang.title': ['اللغة', 'Language'],
+    'lang.current': ['اللغة الحالية: العربية (من اليمين إلى اليسار)', 'Current language: English (left to right)'],
+
+    'nav.dashboard': ['الرئيسية', 'Home'],
+    'nav.accounts': ['الأسماء والحسابات', 'Names & accounts'],
+    'nav.accountsShort': ['الأسماء', 'Names'],
+    'nav.monthly': ['الاستحقاقات الشهرية', 'Monthly dues'],
+    'nav.monthlyShort': ['الشهري', 'Monthly'],
+    'nav.cash': ['الكاش', 'Cash'],
+    'nav.ledger': ['سجل الحركات', 'Transaction log'],
+    'nav.reports': ['التقارير', 'Reports'],
+    'nav.backup': ['النسخ الاحتياطي', 'Backup'],
+    'nav.prefs': ['الإعدادات والفحص', 'Settings & checks'],
+    'nav.more': ['المزيد', 'More'],
+
+    'state.notYet': ['غير مفعّل بعد', 'Not active yet'],
+    'state.phase': ['يُبنى في المرحلة {n}', 'Built in phase {n}'],
+    'state.planned': ['ما ستحتويه هذه الصفحة', 'What this page will contain'],
+    'state.noData': ['البيانات محفوظة في هذا المتصفح فقط، ولا توجد مزامنة. صدّر نسخة احتياطية بعد كل إدخال مهم.', 'Data is saved in this browser only, with no sync. Export a backup after important entries.'],
+
+    'dash.title': ['لوحة التحكم', 'Dashboard'],
+    'dash.cash': ['رصيد الكاش الحالي', 'Current cash balance'],
+    'dash.cashFormula': ['المقبوض فعلياً − المدفوع فعلياً', 'Cash actually received − cash actually paid'],
+    'dash.received': ['إجمالي المقبوض الفعلي', 'Total cash received'],
+    'dash.paid': ['إجمالي المدفوع الفعلي', 'Total cash paid'],
+    'dash.agreements': ['المبالغ المتفق عليها', 'Agreed amounts'],
+    'dash.agreed': ['إجمالي المبالغ المتفق عليها', 'Total agreed amounts'],
+    'dash.remaining': ['إجمالي المبالغ المتبقية', 'Total remaining'],
+    'dash.monthly': ['الحسابات الشهرية', 'Monthly accounts'],
+    'dash.dues': ['إجمالي الاستحقاقات الشهرية', 'Total monthly dues'],
+    'dash.shortfall': ['إجمالي النقص المتراكم', 'Total accumulated shortfall'],
+    'dash.directory': ['السجل', 'Directory'],
+    'dash.names': ['عدد الأسماء', 'Number of names'],
+    'dash.count': ['عدد الحسابات', 'Number of accounts'],
+    'dash.charts': ['الرسوم البيانية', 'Charts'],
+    'dash.chartsNote': ['المقبوض مقابل المدفوع، وحركة الكاش، وتطور النقص، وتوزيع الحسابات. تُبنى في المرحلة 5.', 'Received vs paid, cash flow, shortfall trend and account distribution. Built in phase 5.'],
+
+    'cash.rules': ['قواعد الكاش الإلزامية', 'Mandatory cash rules'],
+    'cash.r1': ['المبلغ المتفق عليه ليس كاشاً مقبوضاً.', 'An agreed amount is not cash received.'],
+    'cash.r2': ['الاستحقاق الشهري والنقص ليسا كاشاً.', 'A monthly due or a shortfall is not cash.'],
+    'cash.r3': ['الخصم والتسوية المحاسبية ليسا قبضاً.', 'A discount or an accounting settlement is not a receipt.'],
+    'cash.r4': ['لا يدخل مبلغ في الرصيد إلا بتسجيل قبض فعلي.', 'Money enters the balance only when a cash receipt is recorded.'],
+    'reports.f1': ['المبالغ المتفق عليها والمتبقي', 'Agreed amounts and remaining balances'],
+    'reports.f2': ['الاستحقاقات الشهرية والنقص المتراكم', 'Monthly dues and accumulated shortfall'],
+    'reports.f3': ['المقبوضات والمدفوعات ورصيد الكاش', 'Receipts, payments and cash balance'],
+    'reports.f4': ['تقرير شامل، مع التصفية والتصدير', 'Full report with filters and export'],
+
+    'prefs.storage': ['الحفظ على هذا الجهاز', 'Saving on this device'],
+    'prefs.storageOk': ['المتصفح يسمح بحفظ الإعدادات.', 'This browser allows settings to be saved.'],
+    'prefs.storageBad': ['المتصفح يمنع الحفظ هنا، ولن يبقى اختيار اللغة بعد الإغلاق. جرّب فتح النظام في متصفح عادي خارج وضع التصفح الخاص.', 'This browser blocks saving here, so the language choice will be lost on close. Try a regular browser outside private mode.'],
+    'prefs.noSync': ['لا توجد مزامنة بين الأجهزة. كل جهاز ومتصفح مستقل عن غيره.', 'There is no sync between devices. Each device and browser is separate.'],
+    'prefs.runCheck': ['تشغيل فحص الحفظ', 'Run storage check'],
+    'prefs.checkOk': ['نجح الفحص: تمت الكتابة والقراءة والمسح.', 'Check passed: write, read and delete all worked.'],
+    'prefs.checkFail': ['فشل الفحص: تعذّر الحفظ على هذا المتصفح.', 'Check failed: this browser could not save.'],
+    'amount.title': ['تجربة إدخال المبلغ', 'Try amount entry'],
+    'amount.help': ['تجربة لقواعد التحقق فقط. لا يُحفظ المبلغ.', 'This only tests the validation rules. The amount is not saved.'],
+    'amount.label': ['المبلغ بالريال', 'Amount in SAR'],
+    'amount.button': ['تحقق من المبلغ', 'Check amount'],
+    'amount.ok': ['مبلغ صحيح: {value}', 'Valid amount: {value}'],
+    'err.empty': ['أدخل المبلغ.', 'Enter an amount.'],
+    'err.negative': ['لا يُقبل مبلغ سالب. أدخل مبلغاً أكبر من صفر.', 'Negative amounts are not accepted. Enter an amount above zero.'],
+    'err.zero': ['يجب أن يكون المبلغ أكبر من صفر.', 'The amount must be above zero.'],
+    'err.decimals': ['المسموح خانتان عشريتان كحد أقصى.', 'Use no more than two decimal places.'],
+    'err.format': ['صيغة المبلغ غير صحيحة. مثال صحيح: 10,000.50', 'The amount format is not valid. Example: 10,000.50'],
+    'err.tooLarge': ['المبلغ أكبر من الحد المسموح.', 'The amount is above the allowed limit.'],
+    'reset.title': ['إعادة ضبط الإعدادات', 'Reset settings'],
+    'reset.help': ['تعيد اللغة إلى العربية وتمسح تفضيلات هذا المتصفح. لا تمس الأسماء ولا الحسابات ولا الحركات.', 'Returns the language to Arabic and clears browser preferences. Names, accounts and transactions are not touched.'],
+    'reset.button': ['إعادة الضبط', 'Reset'],
+    'reset.confirm': ['هل تريد إعادة ضبط الإعدادات؟', 'Reset the settings?'],
+    'reset.done': ['تمت إعادة ضبط الإعدادات.', 'Settings were reset.'],
+    'reset.fail': ['تعذّرت إعادة الضبط لأن المتصفح منع الحفظ.', 'Reset failed because the browser blocked saving.'],
+    'dialog.confirm': ['تأكيد', 'Confirm'],
+    'dialog.cancel': ['إلغاء', 'Cancel'],
+    'dialog.close': ['إغلاق', 'Close'],
+    'people.add': ['إضافة اسم', 'Add name'],
+    'people.search': ['بحث عن اسم أو حساب', 'Search names or accounts'],
+    'people.filter': ['عرض', 'Show'],
+    'filter.all': ['كل الأسماء', 'All names'],
+    'filter.archived': ['لديها حسابات مؤرشفة', 'With archived accounts'],
+    'people.shown': ['المعروض {n} من {total}', 'Showing {n} of {total}'],
+    'people.empty': ['لا توجد أسماء بعد. اضغط «إضافة اسم» للبدء.', 'No names yet. Tap “Add name” to start.'],
+    'people.noMatch': ['لا توجد نتائج مطابقة. غيّر البحث أو خيار العرض.', 'No matches. Change the search or the filter.'],
+    'people.active': ['الحسابات النشطة: {n}', 'Active accounts: {n}'],
+    'people.archived': ['المؤرشفة: {n}', 'Archived: {n}'],
+    'type.agreement': ['مبلغ متفق عليه', 'Agreed amount'],
+    'type.monthly': ['مبلغ شهري ثابت', 'Fixed monthly amount'],
+    'account.default.agreement': ['حساب اتفاق {n}', 'Agreement account {n}'],
+    'account.default.monthly': ['حساب شهري {n}', 'Monthly account {n}'],
+    'account.add': ['إضافة حساب', 'Add account'],
+    'account.editLabel': ['تعديل وصف الحساب', 'Edit account label'],
+    'account.noLabel': ['دون وصف', 'No label'],
+    'account.archive': ['أرشفة', 'Archive'],
+    'account.restore': ['استعادة', 'Restore'],
+    'account.archiveConfirm': ['سيُنقل الحساب إلى الأرشيف دون حذفه، ويمكنك استعادته لاحقاً. هل تتابع؟', 'The account moves to the archive without being deleted, and you can restore it later. Continue?'],
+    'account.restoreConfirm': ['هل تريد استعادة هذا الحساب؟', 'Restore this account?'],
+    'person.back': ['العودة إلى الأسماء', 'Back to names'],
+    'person.rename': ['تعديل الاسم', 'Edit name'],
+    'person.activeAccounts': ['الحسابات النشطة', 'Active accounts'],
+    'person.archivedAccounts': ['الأرشيف', 'Archive'],
+    'person.noActive': ['لا توجد حسابات نشطة.', 'No active accounts.'],
+    'person.noArchived': ['لا توجد حسابات مؤرشفة.', 'No archived accounts.'],
+    'person.history': ['سجل التعديلات', 'Change history'],
+    'audit.person.add': ['إضافة الاسم:', 'Name added:'],
+    'audit.person.rename': ['تعديل الاسم من', 'Name changed from'],
+    'audit.account.add': ['إضافة حساب:', 'Account added:'],
+    'audit.account.rename': ['تعديل وصف الحساب من', 'Account label changed from'],
+    'audit.account.archive': ['أرشفة حساب:', 'Account archived:'],
+    'audit.account.restore': ['استعادة حساب:', 'Account restored:'],
+    'audit.to': ['إلى', 'to'],
+    'field.name': ['الاسم', 'Name'],
+    'field.types': ['أنواع الحسابات (اختر واحداً أو الاثنين)', 'Account types (choose one or both)'],
+    'field.type': ['نوع الحساب', 'Account type'],
+    'field.label': ['وصف الحساب (اختياري)', 'Account label (optional)'],
+    'dialog.save': ['حفظ', 'Save'],
+    'toast.personAdded': ['تمت إضافة الاسم.', 'Name added.'],
+    'toast.renamed': ['تم حفظ الاسم.', 'Name saved.'],
+    'toast.accountAdded': ['تمت إضافة الحساب.', 'Account added.'],
+    'toast.labelSaved': ['تم حفظ وصف الحساب.', 'Account label saved.'],
+    'toast.archived': ['تمت أرشفة الحساب.', 'Account archived.'],
+    'toast.restored': ['تمت استعادة الحساب.', 'Account restored.'],
+    'err.nameRequired': ['أدخل الاسم.', 'Enter a name.'],
+    'err.nameLong': ['الاسم طويل. الحد 80 حرفاً.', 'The name is too long. The limit is 80 characters.'],
+    'err.nameDuplicate': ['هذا الاسم مسجل مسبقاً. إن كان لشخص آخر فأضف ما يميزه.', 'This name already exists. If it is someone else, add something to tell them apart.'],
+    'err.typeRequired': ['اختر نوع حساب واحداً على الأقل.', 'Choose at least one account type.'],
+    'err.labelLong': ['وصف الحساب طويل. الحد 60 حرفاً.', 'The label is too long. The limit is 60 characters.'],
+    'err.labelDuplicate': ['يوجد حساب من النوع نفسه بهذا الوصف. قد يكون في الأرشيف.', 'An account of this type already has this label. It may be in the archive.'],
+    'err.notFound': ['السجل غير موجود.', 'Record not found.'],
+    'err.stale': ['تغيّرت البيانات منذ فتح النافذة. أغلقها وأعد المحاولة.', 'The data changed after this window opened. Close it and try again.'],
+    'err.unknown': ['عملية غير معروفة.', 'Unknown operation.'],
+    'err.saveFailed': ['لم يتم الحفظ. تحقق من مساحة الجهاز وأعد المحاولة.', 'Not saved. Check the device storage space and try again.'],
+    'err.dbUnavailable': ['تعذّر فتح مخزن البيانات، لذلك أوقفنا الإضافة والتعديل. افتح النظام في متصفح عادي خارج التصفح الخاص.', 'The data store could not be opened, so adding and editing are off. Open the app in a regular browser outside private mode.'],
+    'err.dataInvalid': ['البيانات المحفوظة غير مقروءة بهذه النسخة. لم نغيّرها. لا تمسح بيانات المتصفح.', 'This version cannot read the saved data. It was left unchanged. Do not clear your browser data.'],
+    'data.persisted': ['وافق المتصفح على التخزين الدائم. هذا لا يغني عن النسخ الاحتياطي.', 'The browser granted persistent storage. This does not replace a backup.'],
+    'data.notPersisted': ['لم يمنح المتصفح تخزيناً دائماً، وقد يمسح البيانات.', 'The browser has not granted persistent storage and may clear the data.'],
+    'dash.includesArchived': ['الإجماليات المالية تشمل الحسابات المؤرشفة.', 'Money totals include archived accounts.'],
+    'cash.none': ['لا يوجد قبض فعلي مسجل.', 'No cash receipts recorded.'],
+    'account.open': ['فتح الحساب', 'Open account'],
+    'account.readOnly': ['الحساب مؤرشف، للعرض فقط. استعده من صفحة الاسم للتعديل.', 'This account is archived and read-only. Restore it from the name page to make changes.'],
+    'account.archivedChip': ['مؤرشف', 'Archived'],
+    'agreement.none': ['لم يُسجَّل مبلغ الاتفاق بعد.', 'No agreed amount recorded yet.'],
+    'agreement.noneShort': ['لا يوجد مبلغ اتفاق', 'No agreed amount'],
+    'sum.original': ['المبلغ الأصلي', 'Original amount'],
+    'sum.additions': ['الإضافات (+)', 'Additions (+)'],
+    'sum.discounts': ['الخصومات (−)', 'Discounts (−)'],
+    'sum.paid': ['المبالغ المسددة (−)', 'Payments (−)'],
+    'sum.remaining': ['المتبقي', 'Remaining'],
+    'sum.formula': ['المتبقي = الأصلي + الإضافات − الخصومات − المسدد', 'Remaining = original + additions − discounts − payments'],
+    'kind.principal': ['مبلغ الاتفاق', 'Agreed amount'],
+    'kind.addition': ['إضافة', 'Addition'],
+    'kind.discount': ['خصم', 'Discount'],
+    'kind.payment': ['دفعة من الاتفاق', 'Agreement payment'],
+    'kind.due_payment': ['دفعة شهرية', 'Monthly payment'],
+    'kind.settlement': ['تسوية نقص سابق', 'Past shortfall settlement'],
+    'money.principal': ['تسجيل مبلغ الاتفاق', 'Record agreed amount'],
+    'money.payment': ['تسجيل دفعة', 'Record payment'],
+    'money.addition': ['إضافة مبلغ', 'Add amount'],
+    'money.discount': ['تسجيل خصم', 'Record discount'],
+    'money.duePayment': ['دفعة للشهر', 'Pay this month'],
+    'money.settlement': ['تسوية نقص سابق', 'Settle past shortfall'],
+    'money.monthlyAmount': ['تحديد المبلغ الشهري', 'Set monthly amount'],
+    'money.createDue': ['إنشاء استحقاق شهر', 'Create monthly due'],
+    'money.reverse': ['عكس حركة', 'Reverse transaction'],
+    'money.reverseHelp': ['تبقى الحركة الأصلية، وتضاف حركة عكسية. إن كان معها قبض مرتبط فسيُعكس أيضاً.', 'The original stays and a reversing entry is added. A linked cash receipt is reversed too.'],
+    'money.max': ['الحد الأقصى:', 'Maximum:'],
+    'money.maxSettlement': ['الحد الأقصى (نقص الأشهر السابقة لشهر التاريخ المختار):', 'Maximum (shortfall of months before the chosen date’s month):'],
+    'money.cashQuestion': ['هل قبضت المبلغ فعلياً؟', 'Did you actually receive the money?'],
+    'money.cashYes': ['تم قبض المبلغ فعلياً (يدخل الكاش)', 'Received in cash (adds to cash balance)'],
+    'money.cashNo': ['لا، تسجيل في الحساب فقط', 'No, record on the account only'],
+    'money.confirmDuplicate': ['أؤكد أن هذه دفعة أو حركة منفصلة وليست مكررة', 'I confirm this is a separate transaction, not a duplicate'],
+    'field.date': ['التاريخ', 'Date'],
+    'field.agreementDate': ['تاريخ الاتفاق', 'Agreement date'],
+    'field.month': ['الشهر', 'Month'],
+    'field.year': ['السنة', 'Year'],
+    'field.description': ['الوصف', 'Description'],
+    'field.notes': ['ملاحظات', 'Notes'],
+    'field.descriptionOpt': ['الوصف (اختياري)', 'Description (optional)'],
+    'field.notesOpt': ['ملاحظات (اختياري)', 'Notes (optional)'],
+    'field.reason': ['سبب العكس', 'Reversal reason'],
+    'entry.log': ['حركات الحساب', 'Account transactions'],
+    'entry.none': ['لا توجد حركات بعد.', 'No transactions yet.'],
+    'entry.reversalOf': ['حركة عكسية:', 'Reversal:'],
+    'entry.reversed': ['معكوسة', 'Reversed'],
+    'entry.reverse': ['عكس الحركة', 'Reverse'],
+    'entry.cashYes': ['قُبض فعلياً', 'Cash received'],
+    'entry.cashNo': ['لم يُسجَّل قبض', 'No cash recorded'],
+    'entry.cashReversed': ['عُكس القبض المرتبط', 'Linked receipt reversed'],
+    'entry.forMonth': ['عن', 'For'],
+    'm.fixed': ['المبلغ الشهري الثابت:', 'Fixed monthly amount:'],
+    'm.notSet': ['لم يُحدَّد', 'Not set'],
+    'm.due': ['المستحق', 'Due'],
+    'm.paid': ['المدفوع للشهر', 'Paid for the month'],
+    'm.short': ['نقص الشهر', 'Month shortfall'],
+    'm.previous': ['النقص السابق المتراكم', 'Previous accumulated shortfall'],
+    'm.previousSettled': ['المسدد من النقص السابق', 'Settled from previous shortfall'],
+    'm.remaining': ['النقص المتبقي حتى هذا الشهر', 'Remaining shortfall through this month'],
+    'm.settledThis': ['سُدد لاحقاً من نقص هذا الشهر:', 'Later settled from this month’s shortfall:'],
+    'm.totalDue': ['إجمالي المستحق', 'Total due'],
+    'm.totalPaid': ['المدفوع للأشهر', 'Paid for months'],
+    'm.totalSettled': ['تسويات النقص', 'Shortfall settlements'],
+    'm.totalRemaining': ['النقص المتبقي', 'Remaining shortfall'],
+    'm.fifo': ['تُوزع التسوية على أقدم نقص أولاً.', 'Settlements apply to the oldest shortfall first.'],
+    'm.noDues': ['لا توجد استحقاقات بعد.', 'No monthly dues yet.'],
+    'due.cancel': ['إلغاء الاستحقاق', 'Cancel due'],
+    'due.cancelConfirm': ['يبقى الإلغاء مسجلاً في السجل. يُرفض إذا كان للشهر دفعات أو تعتمد عليه تسوية. هل تتابع؟', 'The cancellation stays in the history. It is refused if the month has payments or a settlement depends on it. Continue?'],
+    'months.prev': ['الشهر السابق', 'Previous month'],
+    'months.next': ['الشهر التالي', 'Next month'],
+    'months.generate': ['إنشاء استحقاقات الشهر', 'Create this month’s dues'],
+    'months.generateConfirm': ['إنشاء استحقاق {month} لعدد {n} من الحسابات؟', 'Create dues for {month} for {n} account(s)?'],
+    'months.pending': ['حسابات جاهزة لإنشاء استحقاقها: {n}.', 'Accounts ready for a new due: {n}.'],
+    'months.noAmount': ['دون مبلغ شهري محدد: {n}.', 'Without a monthly amount: {n}.'],
+    'months.future': ['لا يمكن إنشاء استحقاق لشهر لم يبدأ.', 'A due cannot be created for a month that has not started.'],
+    'months.none': ['لا توجد حسابات شهرية. أضفها من صفحة الأسماء.', 'No monthly accounts. Add them from the Names page.'],
+    'months.totals': ['مجموع', 'Totals for'],
+    'months.noDue': ['لا يوجد استحقاق لهذا الشهر.', 'No due for this month.'],
+    'audit.entry.add': ['تسجيل حركة:', 'Transaction recorded:'],
+    'audit.entry.reverse': ['عكس حركة:', 'Transaction reversed:'],
+    'audit.due.add': ['إنشاء استحقاق:', 'Due created:'],
+    'audit.due.cancel': ['إلغاء استحقاق:', 'Due cancelled:'],
+    'audit.account.monthlyAmount': ['تحديد المبلغ الشهري:', 'Monthly amount set:'],
+    'backup.private': ['ملف النسخة يحتوي على الأسماء والمبالغ دون تشفير. احفظه في مكان خاص، ولا ترفعه إلى GitHub.', 'A backup file contains names and amounts without encryption. Keep it private and never upload it to GitHub.'],
+    'backup.exportTitle': ['تصدير نسخة', 'Export a backup'],
+    'backup.download': ['تنزيل ملف JSON', 'Download JSON file'],
+    'backup.copy': ['نسخ نص النسخة', 'Copy backup text'],
+    'backup.downloadStarted': ['بدأ التنزيل. تأكد من وجود الملف في مجلد التنزيلات. إن لم يظهر فاستخدم النسخ.', 'Download started. Check that the file is in your downloads. If it is not, use copy.'],
+    'backup.copied': ['تم نسخ النص. الصقه في ملف أو مكان خاص وآمن.', 'Text copied. Paste it into a private, safe file or place.'],
+    'backup.copyManual': ['تعذّر النسخ التلقائي. انسخ النص المحدد يدوياً.', 'Automatic copy failed. Copy the selected text yourself.'],
+    'backup.last': ['آخر طلب تصدير:', 'Last export attempt:'],
+    'backup.never': ['لم تُصدَّر نسخة من هذا المتصفح بعد.', 'No backup has been exported from this browser yet.'],
+    'backup.importTitle': ['استيراد نسخة', 'Import a backup'],
+    'backup.importHelp': ['يُفحص الملف أولاً، ولا يتغير شيء قبل تأكيدك. الاستيراد يستبدل البيانات ولا يدمجها.', 'The file is checked first and nothing changes until you confirm. Import replaces data and does not merge it.'],
+    'backup.choose': ['اختيار ملف النسخة', 'Choose backup file'],
+    'backup.paste': ['أو الصق نص النسخة', 'Or paste backup text'],
+    'backup.pasteLabel': ['نص النسخة', 'Backup text'],
+    'backup.inspect': ['فحص النص', 'Check text'],
+    'backup.valid': ['اجتازت النسخة فحص السلامة والقواعد المحاسبية.', 'The backup passed the integrity and accounting checks.'],
+    'backup.exportedAt': ['تاريخ التصدير:', 'Exported:'],
+    'backup.inFile': ['في النسخة:', 'In the backup:'],
+    'backup.onDevice': ['على الجهاز:', 'On this device:'],
+    'backup.counts': ['أسماء {names}، حسابات {accounts}، استحقاقات {dues}، حركات {entries}', 'names {names}, accounts {accounts}, dues {dues}, transactions {entries}'],
+    'backup.identical': ['النسخة مطابقة للبيانات الحالية، فلا حاجة إلى استيرادها.', 'This backup matches the current data, so there is nothing to import.'],
+    'backup.importedBefore': ['سبق استيراد هذه النسخة في هذا المتصفح. استيرادها مجدداً يزيل ما تغيّر بعدها.', 'This backup was imported in this browser before. Importing it again removes later changes.'],
+    'backup.fewer': ['تنبيه: على الجهاز سجلات أكثر مما في النسخة، وقد تفقد إدخالات أحدث.', 'Warning: this device has more records than the backup. You may lose newer entries.'],
+    'backup.replace': ['استبدال البيانات الحالية', 'Replace current data'],
+    'backup.replaceConfirm': ['ستحل النسخة محل كل البيانات الحالية. نحفظ البيانات الحالية كنقطة استعادة واحدة. هل تتابع؟', 'The backup will replace all current data. Current data is kept as a single recovery point. Continue?'],
+    'backup.recoveryTitle': ['نقطة الاستعادة', 'Recovery point'],
+    'backup.recoveryHelp': ['البيانات التي استُبدلت في آخر عملية. هي داخل المتصفح وليست نسخة خارجية.', 'The data replaced by the last operation. It lives inside this browser and is not an external backup.'],
+    'backup.noRecovery': ['لا توجد نقطة استعادة.', 'No recovery point.'],
+    'backup.recover': ['استعادة هذه البيانات', 'Restore this data'],
+    'backup.recoverConfirm': ['ستعود هذه البيانات، وتصبح البيانات الحالية هي نقطة الاستعادة. هل تتابع؟', 'This data will return, and the current data becomes the recovery point. Continue?'],
+    'toast.saved': ['تم الحفظ.', 'Saved.'],
+    'toast.duesCreated': ['تم إنشاء استحقاقات الشهر.', 'Monthly dues created.'],
+    'toast.imported': ['تم استيراد النسخة.', 'Backup imported.'],
+    'toast.recovered': ['تمت استعادة البيانات.', 'Data restored.'],
+    'err.exceedsRemaining': ['المبلغ أكبر من المتبقي ({max}).', 'The amount is more than the remaining balance ({max}).'],
+    'err.exceedsDue': ['المبلغ أكبر من المفتوح لهذا الشهر ({max}). ما زاد من نقص سابق يُسجل كتسوية.', 'The amount is more than what is open for this month ({max}). Record past shortfall as a settlement.'],
+    'err.exceedsShortfall': ['مبلغ التسوية أكبر من النقص المتاح للأشهر السابقة ({max}).', 'The settlement is more than the available shortfall of earlier months ({max}).'],
+    'err.principalExists': ['مبلغ الاتفاق مسجل. لتغييره استخدم إضافة أو خصماً.', 'The agreed amount already exists. Use an addition or a discount to change it.'],
+    'err.noPrincipal': ['سجّل مبلغ الاتفاق أولاً.', 'Record the agreed amount first.'],
+    'err.principalInUse': ['لا يمكن عكس مبلغ الاتفاق ما دامت عليه حركات. اعكسها أولاً أو استخدم إضافة أو خصماً.', 'The agreed amount cannot be reversed while other transactions depend on it. Reverse those first, or use an addition or discount.'],
+    'err.alreadySaved': ['هذه الحركة محفوظة مسبقاً.', 'This transaction was already saved.'],
+    'err.similar': ['توجد حركة بالنوع والمبلغ والتاريخ نفسه. إن كانت منفصلة فأكّد ذلك بالأسفل ثم احفظ.', 'A transaction with the same type, amount and date exists. If this one is separate, confirm below and save.'],
+    'err.cashChoice': ['اختر: هل قبضت المبلغ فعلياً؟', 'Choose whether you actually received the money.'],
+    'err.date': ['اختر تاريخاً صحيحاً.', 'Choose a valid date.'],
+    'err.dateFuture': ['لا يمكن تسجيل حركة بتاريخ مستقبلي.', 'A transaction cannot be dated in the future.'],
+    'err.textLong': ['النص طويل أكثر من المسموح.', 'The text is too long.'],
+    'err.archived': ['الحساب مؤرشف. استعده أولاً.', 'The account is archived. Restore it first.'],
+    'err.wrongType': ['هذه العملية لا تناسب نوع الحساب.', 'This action does not fit the account type.'],
+    'err.reason': ['اكتب سبب العكس.', 'Enter the reason for reversing.'],
+    'err.alreadyReversed': ['الحركة معكوسة مسبقاً.', 'This transaction is already reversed.'],
+    'err.dataRules': ['رُفضت العملية لأنها تخل بتوازن الحساب، مثل أن يصبح المتبقي سالباً. لم يتغير شيء.', 'Refused because it would break the account balance, such as a negative remaining amount. Nothing changed.'],
+    'err.period': ['اختر شهراً صحيحاً.', 'Choose a valid month.'],
+    'err.periodFuture': ['لا يمكن إنشاء استحقاق لشهر لم يبدأ.', 'A due cannot be created for a month that has not started.'],
+    'err.dueExists': ['استحقاق هذا الشهر موجود لهذا الحساب.', 'This account already has a due for this month.'],
+    'err.noDuesToCreate': ['لا توجد استحقاقات جديدة لإنشائها. تأكد من تحديد المبلغ الشهري.', 'There are no new dues to create. Check that monthly amounts are set.'],
+    'err.dueHasPayments': ['للشهر دفعات. اعكسها أولاً.', 'This month has payments. Reverse them first.'],
+    'err.dueSettled': ['توجد تسوية تعتمد على نقص هذا الشهر. اعكسها أولاً.', 'A settlement depends on this month’s shortfall. Reverse it first.'],
+    'err.exportFailed': ['تعذّر إنشاء النسخة.', 'The backup could not be created.'],
+    'err.noCrypto': ['هذا المتصفح لا يدعم فحص سلامة النسخ هنا. افتح النظام عبر رابط HTTPS.', 'This browser cannot verify backups here. Open the app over an HTTPS link.'],
+    'err.backupEmpty': ['اختر ملفاً أو الصق نص النسخة.', 'Choose a file or paste the backup text.'],
+    'err.backupLarge': ['الملف أكبر من المسموح.', 'The file is too large.'],
+    'err.backupJson': ['الملف غير مكتمل أو ليس JSON صحيحاً.', 'The file is incomplete or not valid JSON.'],
+    'err.backupForeign': ['هذا ليس ملف نسخة احتياطية لهذا النظام، أو إصداره غير مدعوم.', 'This is not a backup from this app, or its version is not supported.'],
+    'err.backupChecksum': ['فشل فحص السلامة: محتوى الملف تغيّر أو تلف.', 'Integrity check failed: the file was changed or damaged.'],
+    'err.backupRules': ['محتوى النسخة يخالف القواعد المحاسبية، فرُفضت.', 'The backup breaks accounting rules, so it was rejected.'],
+    'err.dueMovesSettlement': ['إنشاء هذا الشهر الأقدم سينقل تسوية مسجلة إليه ويعيد فتح أشهر لاحقة. اعكس التسوية، ثم أنشئ الشهر وسجّل دفعاته، ثم أعد التسوية.', 'Creating this earlier month would move a recorded settlement onto it and reopen later months. Reverse the settlement, create the month and record its payments, then enter the settlement again.'],
+    'cash.log': ['سجل حركة الكاش', 'Cash movements'],
+    'cash.negative': ['رصيد الكاش سالب: المدفوع المسجل أكثر من المقبوض. راجع الحركات.', 'The cash balance is negative: recorded payments out exceed receipts. Review the movements.'],
+    'kind.cash_in': ['قبض فعلي', 'Cash received'],
+    'kind.cash_out': ['دفع فعلي', 'Cash paid out'],
+    'kind.due': ['استحقاق شهري', 'Monthly due'],
+    'kind.due_cancel': ['إلغاء استحقاق', 'Due cancellation'],
+    'money.cashIn': ['قبض فعلي', 'Cash received'],
+    'money.cashOut': ['دفع فعلي', 'Cash paid out'],
+    'money.cashInHelp': ['قبض مستقل يزيد الكاش فقط ولا ينقص المتبقي أو النقص. لتسديد مبلغ على الشخص سجّل دفعة من صفحة الحساب.', 'A standalone receipt only adds to cash. It does not reduce what is owed. To pay off a balance, record a payment on the account page.'],
+    'money.cashOutHelp': ['دفع فعلي ينقص الكاش فقط ولا يغيّر المتبقي أو النقص.', 'A payment out only reduces cash. It does not change what is owed.'],
+    'money.waiting': ['في هذا الحساب دفعة لم يُسجَّل قبضها. إن كان هذا هو مبلغها فاستخدم «تسجيل القبض» على الدفعة من صفحة الحساب، حتى ترتبط بها.', 'This account has a payment with no cash recorded. If this is that money, use “Record receipt” on the payment in the account page so they are linked.'],
+    'money.receiveLater': ['تسجيل قبض دفعة', 'Record receipt for payment'],
+    'money.receiveLaterHelp': ['يزيد الكاش بكامل مبلغ الدفعة ويرتبط بها. لا يتغير المتبقي لأنه خُصم عند تسجيل الدفعة.', 'Cash increases by the full payment amount and is linked to it. What is owed does not change, because the payment already reduced it.'],
+    'money.reverseReceiptHelp': ['يُعكس القبض وحده فينقص الكاش، وتبقى الدفعة مسجلة في الحساب دون قبض.', 'Only the receipt is reversed, so cash goes down. The payment stays on the account with no cash recorded.'],
+    'money.chooseName': ['اختر الاسم', 'Choose a name'],
+    'money.chooseAccount': ['اختر الحساب', 'Choose an account'],
+    'field.receiptDate': ['تاريخ القبض', 'Date received'],
+    'entry.receive': ['تسجيل القبض', 'Record receipt'],
+    'entry.reverseReceipt': ['عكس القبض فقط', 'Reverse receipt only'],
+    'entry.receiptOfPayment': ['قبض مرتبط بدفعة', 'Receipt linked to a payment'],
+    'err.alreadyReceived': ['قبض هذه الدفعة مسجل مسبقاً.', 'A receipt for this payment is already recorded.'],
+    'err.chooseAccount': ['اختر الاسم والحساب.', 'Choose a name and an account.'],
+    'ledger.search': ['بحث في الاسم والحساب والوصف والملاحظات', 'Search names, accounts, descriptions and notes'],
+    'ledger.allNames': ['كل الأسماء', 'All names'],
+    'ledger.allKinds': ['كل الأنواع', 'All types'],
+    'ledger.reversalsOnly': ['الحركات العكسية فقط', 'Reversals only'],
+    'ledger.account': ['الحساب', 'Account'],
+    'ledger.kind': ['نوع الحركة', 'Transaction type'],
+    'ledger.amount': ['المبلغ', 'Amount'],
+    'ledger.effect': ['أثر الحركة', 'Effect'],
+    'ledger.from': ['من تاريخ', 'From date'],
+    'ledger.to': ['إلى تاريخ', 'To date'],
+    'ledger.sort': ['الترتيب', 'Sort'],
+    'ledger.clear': ['مسح التصفية', 'Clear filters'],
+    'ledger.csv': ['تصدير CSV', 'Export CSV'],
+    'ledger.xlsx': ['تصدير Excel', 'Export Excel'],
+    'ledger.print': ['طباعة', 'Print'],
+    'ledger.audit': ['سجل التعديلات', 'Change history'],
+    'ledger.shown': ['المعروض {n} من {total}', 'Showing {n} of {total}'],
+    'ledger.more': ['عرض المزيد', 'Show more'],
+    'ledger.in': ['المقبوض ضمن المعروض (صافي العكوس)', 'Received in view (net of reversals)'],
+    'ledger.out': ['المدفوع ضمن المعروض (صافي العكوس)', 'Paid out in view (net of reversals)'],
+    'ledger.net': ['صافي أثر الكاش للمعروض', 'Net cash effect in view'],
+    'ledger.noMatch': ['لا توجد حركات تطابق التصفية.', 'No transactions match the filters.'],
+    'ledger.empty': ['لا توجد حركات بعد.', 'No transactions yet.'],
+    'ledger.noFilter': ['دون تصفية', 'No filters'],
+    'ledger.debtEffect': ['الأثر على المتبقي أو النقص', 'Effect on amount owed'],
+    'ledger.cashEffect': ['الأثر على الكاش', 'Effect on cash'],
+    'ledger.status': ['الحالة', 'Status'],
+    'ledger.forMonth': ['شهر الاستحقاق', 'Due month'],
+    'ledger.recordedAt': ['وقت التسجيل (UTC)', 'Recorded at (UTC)'],
+    'effect.remaining': ['المتبقي', 'Remaining'],
+    'effect.shortfall': ['النقص', 'Shortfall'],
+    'effect.cash': ['الكاش', 'Cash'],
+    'status.normal': ['قائمة', 'Active'],
+    'status.reversed': ['معكوسة', 'Reversed'],
+    'status.reversal': ['حركة عكسية', 'Reversal'],
+    'status.cancelled': ['ملغى', 'Cancelled'],
+    'sort.newest': ['الأحدث أولاً', 'Newest first'],
+    'sort.oldest': ['الأقدم أولاً', 'Oldest first'],
+    'sort.largest': ['الأكبر مبلغاً', 'Largest amount'],
+    'sort.smallest': ['الأصغر مبلغاً', 'Smallest amount'],
+    'toast.exportStarted': ['بدأ التنزيل. تأكد من وجود الملف في التنزيلات.', 'Download started. Check your downloads.'],
+    'cur.sar': ['ر.س', 'SAR']
+  };
+  const LANGS = { ar: { index: 0, dir: 'rtl' }, en: { index: 1, dir: 'ltr' } };
+  function normalize(lang) { return Object.prototype.hasOwnProperty.call(LANGS, lang) ? lang : 'ar'; }
+  function t(lang, key, params) {
+    const row = D[key];
+    if (!row) return key;
+    return row[LANGS[normalize(lang)].index].replace(/\{(\w+)\}/g, (m, p) => (params && p in params ? String(params[p]) : m));
+  }
+  const api = { dictionary: D, t, normalize, dir: (l) => LANGS[normalize(l)].dir };
+  root.ACC = root.ACC || {};
+  root.ACC.i18n = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Input validation. Money is held as an integer number of halalas, never as a float. */
+(function (root) {
+  'use strict';
+  const MAX_MINOR = 100000000000000; // 1 trillion SAR, well inside Number.MAX_SAFE_INTEGER
+
+  function toLatinDigits(s) {
+    return String(s)
+      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06F0));
+  }
+
+  function parseAmount(input) {
+    const fail = (error) => ({ ok: false, error });
+    let s = toLatinDigits(input == null ? '' : input)
+      .replace(/[‎‏؜]/g, '')   // invisible direction marks from copy/paste
+      .replace(/٫/g, '.')                // Arabic decimal separator
+      .replace(/٬/g, ',')                // Arabic thousands separator
+      .trim();
+    if (s === '') return fail('err.empty');
+    if (/^[-−]|[-−]$/.test(s)) return fail('err.negative');
+    // Commas are accepted only as correct thousands groups, so "1,5" is never read as 15.
+    if (!/^(\d+|\d{1,3}(,\d{3})+)(\.\d+)?$/.test(s)) return fail('err.format');
+    const [whole, frac = ''] = s.replace(/,/g, '').split('.');
+    if (frac.length > 2) return fail('err.decimals');
+    const minor = Number(whole) * 100 + Number((frac + '00').slice(0, 2));
+    if (!Number.isSafeInteger(minor) || minor > MAX_MINOR) return fail('err.tooLarge');
+    if (minor === 0) return fail('err.zero');
+    return { ok: true, minor };
+  }
+
+  function formatMinor(minor) {
+    if (!Number.isSafeInteger(minor)) throw new TypeError('minor must be a safe integer');
+    const abs = Math.abs(minor);
+    const whole = String(Math.floor(abs / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (minor < 0 ? '-' : '') + whole + '.' + String(abs % 100).padStart(2, '0');
+  }
+
+  const api = { parseAmount, formatMinor, toLatinDigits, MAX_MINOR };
+  root.ACC = root.ACC || {};
+  root.ACC.validation = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Storage. Phase 1 saves preferences only. Financial records arrive in phase 2. */
+(function (root) {
+  'use strict';
+  const KEY = 'accounts.prefs.v1';
+  const PROBE = 'accounts.probe';
+
+  function create(getBackend) {
+    let memory = {}; // used when the browser blocks storage
+
+    function selfTest() {
+      try {
+        const b = getBackend(), value = String(Date.now());
+        b.setItem(PROBE, value);
+        const same = b.getItem(PROBE) === value;
+        b.removeItem(PROBE);
+        return same && b.getItem(PROBE) === null;
+      } catch (e) { return false; }
+    }
+    function load() {
+      try {
+        const raw = getBackend().getItem(KEY);
+        if (raw === null) return Object.assign({}, memory);
+        const data = JSON.parse(raw);
+        return data && data.schema === 1 && data.prefs ? Object.assign({}, data.prefs) : {};
+      } catch (e) { return Object.assign({}, memory); }
+    }
+    function save(patch) {
+      const prefs = Object.assign(load(), patch);
+      memory = prefs;
+      try { getBackend().setItem(KEY, JSON.stringify({ schema: 1, prefs })); return true; }
+      catch (e) { return false; }
+    }
+    function reset() {
+      try { getBackend().removeItem(KEY); memory = {}; return true; }
+      catch (e) { return false; }
+    }
+    return { selfTest, load, save, reset };
+  }
+
+  const api = { create, KEY };
+  root.ACC = root.ACC || {};
+  root.ACC.storage = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Names and accounts: pure rules, no DOM and no storage.
+   Records link by permanent id, so renaming never touches anything that points at a person.
+   Nothing is ever deleted; every change appends an audit event. */
+(function (root) {
+  'use strict';
+  const SCHEMA = 2, TYPES = ['agreement', 'monthly'], MAX_NAME = 80, MAX_LABEL = 60;
+
+  const fail = (code, params) => { const e = new Error(code); e.code = code; e.params = params; throw e; };
+  const empty = () => ({ schema: SCHEMA, people: [], accounts: [], dues: [], entries: [], audit: [] });
+  const verifiers = []; // accounting rules registered by the money modules
+  /* Phase 2 data (schema 1) gains empty money lists. Nothing existing is changed. */
+  const migrate = (s) => (s && s.schema === 1 ? Object.assign({}, s, { schema: 2, dues: [], entries: [] }) : s);
+
+  const clean = (s) => String(s == null ? '' : s)
+    .replace(/[\u0000-\u001F\u007F​-‏‪-‮⁦-⁩؜﻿]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+  /* Comparison key for search and duplicate detection. The saved text is never altered by this. */
+  const fold = (s) => clean(s).normalize('NFKD')
+    .replace(/[̀-ًͯ-ٰٟـ]/g, '')
+    .replace(/ٱ/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه')
+    .toLowerCase();
+
+  function newId() {
+    const b = new Uint8Array(12);
+    root.crypto.getRandomValues(b);
+    return Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+  }
+  const localDate = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const context = () => ({ id: newId, now: () => new Date().toISOString(), today: () => localDate(new Date()) });
+
+  const person = (s, id) => s.people.find((p) => p.id === id) || fail('err.notFound');
+  const account = (s, id) => s.accounts.find((a) => a.id === id) || fail('err.notFound');
+
+  function checkName(s, raw, selfId) {
+    const name = clean(raw);
+    if (!name || !fold(name)) fail('err.nameRequired');
+    if (name.length > MAX_NAME) fail('err.nameLong');
+    if (s.people.some((p) => p.id !== selfId && fold(p.name) === fold(name))) fail('err.nameDuplicate');
+    return name;
+  }
+  function checkLabel(s, raw, personId, type, selfId) {
+    const label = clean(raw);
+    if (label.length > MAX_LABEL) fail('err.labelLong');
+    if (label && s.accounts.some((a) => a.id !== selfId && a.personId === personId && a.type === type && fold(a.label) === fold(label)))
+      fail('err.labelDuplicate'); // archived accounts count too: restore instead of duplicating
+    return label;
+  }
+  function log(s, ctx, action, personId, accountId, before, after) {
+    s.audit.push({ id: ctx.id(), at: ctx.now(), action, personId, accountId: accountId || null, before, after });
+  }
+  function pushAccount(s, ctx, personId, type, rawLabel) {
+    if (!TYPES.includes(type)) fail('err.typeRequired');
+    const label = checkLabel(s, rawLabel, personId, type);
+    const seq = s.accounts.filter((a) => a.personId === personId && a.type === type).length + 1;
+    const a = { id: ctx.id(), personId, type, label, seq, createdAt: ctx.now(), archivedAt: null };
+    s.accounts.push(a);
+    log(s, ctx, 'account.add', personId, a.id, null, { type, label, seq });
+    return a;
+  }
+
+  const ops = {
+    addPerson(s, input, ctx) {
+      const name = checkName(s, input.name);
+      const types = TYPES.filter((x) => (input.types || []).includes(x));
+      if (!types.length) fail('err.typeRequired');
+      const p = { id: ctx.id(), name, createdAt: ctx.now() };
+      s.people.push(p);
+      log(s, ctx, 'person.add', p.id, null, null, { name });
+      types.forEach((type) => pushAccount(s, ctx, p.id, type, ''));
+      return p.id;
+    },
+    renamePerson(s, input, ctx) {
+      const p = person(s, input.personId);
+      if (input.expected !== undefined && input.expected !== p.name) fail('err.stale');
+      const name = checkName(s, input.name, p.id);
+      if (name === p.name) return p.id;
+      log(s, ctx, 'person.rename', p.id, null, { name: p.name }, { name });
+      p.name = name;
+      return p.id;
+    },
+    addAccount(s, input, ctx) {
+      person(s, input.personId);
+      return pushAccount(s, ctx, input.personId, input.type, input.label).id;
+    },
+    renameAccount(s, input, ctx) {
+      const a = account(s, input.accountId);
+      if (input.expected !== undefined && input.expected !== a.label) fail('err.stale');
+      const label = checkLabel(s, input.label, a.personId, a.type, a.id);
+      if (label === a.label) return a.id;
+      log(s, ctx, 'account.rename', a.personId, a.id, { label: a.label }, { label });
+      a.label = label;
+      return a.id;
+    },
+    archiveAccount(s, input, ctx) {
+      const a = account(s, input.accountId);
+      if (a.archivedAt) fail('err.stale');
+      a.archivedAt = ctx.now();
+      log(s, ctx, 'account.archive', a.personId, a.id, null, null);
+      return a.id;
+    },
+    restoreAccount(s, input, ctx) {
+      const a = account(s, input.accountId);
+      if (!a.archivedAt) fail('err.stale');
+      a.archivedAt = null;
+      log(s, ctx, 'account.restore', a.personId, a.id, null, null);
+      return a.id;
+    }
+  };
+
+  /* All-or-nothing: works on a copy, so a rejected operation changes nothing. */
+  function apply(state, op, input, ctx) {
+    if (!Object.prototype.hasOwnProperty.call(ops, op)) fail('err.unknown');
+    const next = JSON.parse(JSON.stringify(state));
+    const id = ops[op](next, input, ctx || context());
+    check(next); // a change that breaks any rule is discarded whole
+    return { state: next, id };
+  }
+  function check(s) {
+    if (!isValid(s)) fail('err.dataRules');
+    verifiers.forEach((v) => v(s));
+  }
+
+  function isValid(s) {
+    if (!s || s.schema !== SCHEMA || ![s.people, s.accounts, s.dues, s.entries, s.audit].every(Array.isArray) ||
+      ![s.dues, s.entries].every((l) => l.every((x) => x && typeof x.id === 'string'))) return false;
+    const ids = new Set(s.people.map((p) => p && p.id));
+    return ids.size === s.people.length &&
+      s.people.every((p) => p && typeof p.id === 'string' && typeof p.name === 'string') &&
+      new Set(s.accounts.map((a) => a && a.id)).size === s.accounts.length &&
+      s.accounts.every((a) => a && typeof a.id === 'string' && ids.has(a.personId) && TYPES.includes(a.type) && typeof a.label === 'string') &&
+      s.audit.every((e) => e && typeof e.action === 'string');
+  }
+
+  function search(s, query, filter) {
+    const q = fold(query);
+    return s.people.map((p) => {
+      const all = s.accounts.filter((a) => a.personId === p.id);
+      return { person: p, active: all.filter((a) => !a.archivedAt), archived: all.filter((a) => a.archivedAt) };
+    }).filter((r) => {
+      if (q && !fold(r.person.name).includes(q) && !r.active.concat(r.archived).some((a) => fold(a.label).includes(q))) return false;
+      if (filter === 'archived') return r.archived.length > 0;
+      if (TYPES.includes(filter)) return r.active.some((a) => a.type === filter);
+      return true;
+    }).sort((x, y) => x.person.name.localeCompare(y.person.name, 'ar'));
+  }
+
+  const api = { SCHEMA, TYPES, MAX_NAME, MAX_LABEL, empty, apply, isValid, check, migrate, search, fold, clean, context, localDate,
+    register: (more) => Object.assign(ops, more), addVerifier: (v) => verifiers.push(v),
+    helpers: { fail, log, clean, find: { person, account } } };
+  root.ACC = root.ACC || {};
+  root.ACC.accounts = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Money movements. Entries are append-only: a mistake is fixed by a reversing entry.
+   Amounts are positive integers in halalas. Balances are always computed, never stored.
+   verify() holds every accounting rule and runs after each change and on every imported backup. */
+(function (root) {
+  'use strict';
+  const A = typeof module !== 'undefined' ? require('./accounts.js') : root.ACC.accounts;
+  const V = typeof module !== 'undefined' ? require('./validation.js') : root.ACC.validation;
+  const { fail, find, log, clean } = A.helpers;
+
+  const AGREEMENT = ['principal', 'addition', 'discount', 'payment'];
+  const MONTHLY = ['due_payment', 'settlement'];
+  const PAYMENTS = ['payment', 'due_payment', 'settlement']; // only these can carry a cash receipt
+  const CASH = ['cash_in', 'cash_out']; // actual money; on its own it never changes what is owed
+  const MAX_DESC = 200, MAX_NOTES = 1000;
+
+  const isDate = (s) => {
+    if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    const d = new Date(s + 'T00:00:00Z');
+    return !isNaN(d) && d.toISOString().slice(0, 10) === s && s >= '2000-01-01';
+  };
+  const reversedIds = (s) => new Set(s.entries.filter((e) => e.reversesId).map((e) => e.reversesId));
+  /* Active = counts in balances: neither reversed nor itself a reversal. */
+  function active(s, accountId) {
+    const gone = reversedIds(s);
+    return s.entries.filter((e) => !e.reversesId && !gone.has(e.id) && (!accountId || e.accountId === accountId));
+  }
+  const sum = (list, kind) => list.reduce((n, e) => (e.kind === kind ? n + e.amount : n), 0);
+
+  function agreement(s, accountId, list) {
+    const mine = list || active(s, accountId);
+    const head = mine.find((e) => e.kind === 'principal') || null;
+    const original = sum(mine, 'principal'), additions = sum(mine, 'addition'),
+      discounts = sum(mine, 'discount'), paid = sum(mine, 'payment');
+    return { head, original, additions, discounts, paid, remaining: original + additions - discounts - paid };
+  }
+
+  function readAmount(raw) {
+    const r = V.parseAmount(raw);
+    if (!r.ok) fail(r.error);
+    return r.minor;
+  }
+  function readDate(raw, ctx) {
+    if (!isDate(raw)) fail('err.date');
+    if (raw > ctx.today()) fail('err.dateFuture');
+    return raw;
+  }
+  function openAccount(s, id, type) {
+    const a = find.account(s, id);
+    if (a.archivedAt) fail('err.archived');
+    if (type && a.type !== type) fail('err.wrongType');
+    return a;
+  }
+  const push = (s, ctx, fields) => {
+    const e = Object.assign({ id: ctx.id(), opId: null, dueId: null, reversesId: null, sourceId: null,
+      description: '', notes: '', createdAt: ctx.now() }, fields);
+    s.entries.push(e);
+    return e;
+  };
+
+  /* Shared by every new payment or adjustment. input.opId is created once per opened form,
+     so retrying or double tapping the same form can never record it twice. */
+  function record(s, ctx, a, kind, amount, input, dueId) {
+    if (!input.opId) fail('err.unknown');
+    if (s.entries.some((e) => e.opId === input.opId)) fail('err.alreadySaved');
+    const date = readDate(input.date, ctx);
+    const description = clean(input.description), notes = String(input.notes || '').trim();
+    if (description.length > MAX_DESC || notes.length > MAX_NOTES) fail('err.textLong');
+    const isPayment = PAYMENTS.includes(kind);
+    if (isPayment && input.cash !== 'yes' && input.cash !== 'no') fail('err.cashChoice');
+    // The same cash may already be there as a standalone or linked receipt, so cash is compared too.
+    const looksAlike = (e) => e.amount === amount && e.date === date &&
+      ((e.kind === kind && e.dueId === (dueId || null)) || (isPayment && input.cash === 'yes' && e.kind === 'cash_in'));
+    if (!input.confirmDuplicate && active(s, a.id).some(looksAlike)) fail('err.similar');
+    const e = push(s, ctx, { opId: input.opId, accountId: a.id, kind, amount, date, description, notes, dueId: dueId || null });
+    if (isPayment && input.cash === 'yes')
+      push(s, ctx, { accountId: a.id, kind: 'cash_in', amount, date, description, notes, sourceId: e.id });
+    log(s, ctx, 'entry.add', a.personId, a.id, null, { entryId: e.id, kind, amount, cash: isPayment && input.cash === 'yes' });
+    return e.id;
+  }
+
+  function agreementOp(kind) {
+    return (s, input, ctx) => {
+      const a = openAccount(s, input.accountId, 'agreement');
+      const now = agreement(s, a.id);
+      if (kind === 'principal' && now.head) fail('err.principalExists');
+      if (kind !== 'principal' && !now.head) fail('err.noPrincipal');
+      const amount = readAmount(input.amount);
+      if ((kind === 'payment' || kind === 'discount') && amount > now.remaining) fail('err.exceedsRemaining', { max: V.formatMinor(now.remaining) });
+      return record(s, ctx, a, kind, amount, input);
+    };
+  }
+
+  /* Reversal keeps the original. A payment and its linked cash receipt are reversed together. */
+  function reverseEntry(s, input, ctx) {
+    const target = s.entries.find((e) => e.id === input.entryId) || fail('err.notFound');
+    if (target.reversesId || reversedIds(s).has(target.id)) fail('err.alreadyReversed');
+    const a = openAccount(s, target.accountId);
+    if (target.kind === 'principal' && active(s, a.id).some((e) => e.id !== target.id && AGREEMENT.includes(e.kind))) fail('err.principalInUse');
+    const reason = clean(input.reason);
+    if (!reason) fail('err.reason');
+    if (reason.length > MAX_DESC) fail('err.textLong');
+    const cash = linkedReceipt(s, target.id);
+    const copy = (e, extra) => push(s, ctx, Object.assign({ accountId: e.accountId, kind: e.kind, amount: e.amount,
+      date: ctx.today(), dueId: e.dueId, reversesId: e.id, description: reason }, extra));
+    // Reversing a linked receipt alone keeps its payment: it simply becomes "no cash recorded".
+    const r = copy(target, target.kind === 'cash_in' ? { sourceId: target.sourceId } : undefined);
+    if (cash) copy(cash, { sourceId: r.id });
+    log(s, ctx, 'entry.reverse', a.personId, a.id, null, { entryId: target.id, kind: target.kind, amount: target.amount, reason, cash: !!cash });
+    return r.id;
+  }
+
+  /* The active cash receipt of a payment, if any. */
+  const linkedReceipt = (s, paymentId) => active(s).find((e) => e.kind === 'cash_in' && e.sourceId === paymentId) || null;
+
+  /* Cash received for a payment that was first recorded without it. Links to the payment,
+     so the debt is not reduced a second time. */
+  function addReceiptFor(s, input, ctx) {
+    const target = active(s).find((e) => e.id === input.entryId) || fail('err.notFound');
+    if (!PAYMENTS.includes(target.kind)) fail('err.wrongType');
+    if (linkedReceipt(s, target.id)) fail('err.alreadyReceived');
+    const a = openAccount(s, target.accountId);
+    const id = record(s, ctx, a, 'cash_in', target.amount, input);
+    s.entries.find((e) => e.id === id).sourceId = target.id;
+    return id;
+  }
+  /* Standalone cash. */
+  const cashOp = (kind) => (s, input, ctx) => {
+    const a = openAccount(s, input.accountId);
+    return record(s, ctx, a, kind, readAmount(input.amount), input);
+  };
+
+  function verifyEntries(s) {
+    const bad = () => fail('err.dataRules');
+    const byId = new Map(s.entries.map((e) => [e.id, e]));
+    const accounts = new Map(s.accounts.map((a) => [a.id, a]));
+    const dues = new Map(s.dues.map((d) => [d.id, d]));
+    if (byId.size !== s.entries.length) bad();
+    const ops = s.entries.map((e) => e.opId).filter(Boolean);
+    if (new Set(ops).size !== ops.length) bad();
+    const reversed = new Set();
+    for (const e of s.entries) {
+      const a = accounts.get(e.accountId);
+      if (!a || !Number.isSafeInteger(e.amount) || e.amount <= 0 || e.amount > V.MAX_MINOR || !isDate(e.date)) bad();
+      if (typeof e.description !== 'string' || typeof e.notes !== 'string' || typeof e.createdAt !== 'string') bad();
+      const allowed = (a.type === 'agreement' ? AGREEMENT : MONTHLY).concat(CASH);
+      if (!allowed.includes(e.kind)) bad();
+      if (e.kind === 'due_payment') { const d = dues.get(e.dueId); if (!d || d.accountId !== a.id) bad(); }
+      else if (e.dueId) bad();
+      if (e.reversesId) {
+        const o = byId.get(e.reversesId);
+        if (!o || o.reversesId || reversed.has(o.id) || o.kind !== e.kind || o.amount !== e.amount || o.accountId !== e.accountId || o.dueId !== e.dueId) bad();
+        reversed.add(o.id);
+      }
+      if (e.sourceId && e.kind !== 'cash_in') bad();
+    }
+    const linked = new Set();
+    for (const c of s.entries) {
+      if (c.kind !== 'cash_in') continue;
+      if (c.reversesId) {
+        const o = byId.get(c.reversesId);
+        if (!o.sourceId) { if (c.sourceId) bad(); continue; }
+        // receipt reversed alone (same payment) or together with it (the payment's reversal)
+        const via = byId.get(c.sourceId);
+        if (c.sourceId !== o.sourceId && !(via && via.reversesId === o.sourceId)) bad();
+      } else if (c.sourceId) {
+        const src = byId.get(c.sourceId);
+        if (!src || src.reversesId || !PAYMENTS.includes(src.kind) || src.accountId !== c.accountId || src.amount !== c.amount) bad();
+        if (!reversed.has(c.id)) {
+          if (linked.has(src.id) || reversed.has(src.id)) bad(); // one live receipt per live payment
+          linked.add(src.id);
+        }
+      }
+    }
+    const live = active(s);
+    for (const a of s.accounts) {
+      if (a.type !== 'agreement') continue;
+      const mine = live.filter((e) => e.accountId === a.id && AGREEMENT.includes(e.kind));
+      const heads = mine.filter((e) => e.kind === 'principal').length;
+      if (heads > 1 || (!heads && mine.length)) bad();
+      if (agreement(s, a.id, mine).remaining < 0) bad();
+    }
+  }
+
+  /* Cash: only cash entries count. Agreements, dues, discounts and settlements never do by themselves. */
+  function cash(s) {
+    const live = active(s), received = sum(live, 'cash_in'), paid = sum(live, 'cash_out');
+    return { received, paid, balance: received - paid };
+  }
+
+  A.register({
+    setPrincipal: agreementOp('principal'), addAddition: agreementOp('addition'),
+    addDiscount: agreementOp('discount'), addPayment: agreementOp('payment'), reverseEntry,
+    addCashIn: cashOp('cash_in'), addCashOut: cashOp('cash_out'), addReceiptFor
+  });
+
+  const api = { CASH, linkedReceipt, active, reversedIds, agreement, cash, record, openAccount, readAmount, verifyEntries, isDate, PAYMENTS, MAX_DESC, MAX_NOTES };
+  root.ACC = root.ACC || {};
+  root.ACC.transactions = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Fixed monthly accounts.
+   - One due per account per month; a due cannot be created for a month that has not started.
+   - "due_payment" pays one month. "settlement" pays accumulated shortfall of months BEFORE the
+     settlement date's month. They are never merged, and the same shortfall is never paid twice.
+   - Settlements are applied to the oldest open shortfall first. */
+(function (root) {
+  'use strict';
+  const node = typeof module !== 'undefined';
+  const A = node ? require('./accounts.js') : root.ACC.accounts;
+  const V = node ? require('./validation.js') : root.ACC.validation;
+  const T = node ? require('./transactions.js') : root.ACC.transactions;
+  const { fail, find, log } = A.helpers;
+
+  const isPeriod = (p) => typeof p === 'string' && /^20\d{2}-(0[1-9]|1[0-2])$/.test(p);
+  const total = (list, key) => list.reduce((n, x) => n + x[key], 0);
+
+  function raw(s, accountId, live) {
+    const mine = live || T.active(s, accountId);
+    const months = s.dues.filter((d) => d.accountId === accountId && !d.cancelledAt)
+      .sort((a, b) => a.period.localeCompare(b.period))
+      .map((d) => {
+        const paid = mine.reduce((n, e) => (e.kind === 'due_payment' && e.dueId === d.id ? n + e.amount : n), 0);
+        return { due: d, period: d.period, amount: d.amount, paid, short: d.amount - paid, settled: 0 };
+      });
+    const settlements = mine.filter((e) => e.kind === 'settlement')
+      .map((e) => ({ cutoff: e.date.slice(0, 7), amount: e.amount }))
+      .sort((a, b) => a.cutoff.localeCompare(b.cutoff));
+    return { months, settlements };
+  }
+
+  /* Allocates oldest first. feasible=false means some shortfall would be paid twice. */
+  function summary(s, accountId, live) {
+    const { months, settlements } = raw(s, accountId, live);
+    let feasible = months.every((m) => m.short >= 0);
+    for (const st of settlements) {
+      let left = st.amount;
+      for (const m of months) {
+        if (m.period >= st.cutoff || !left) continue;
+        const use = Math.max(0, Math.min(left, m.short - m.settled));
+        m.settled += use; left -= use;
+      }
+      if (left) feasible = false;
+    }
+    months.forEach((m) => { m.open = m.short - m.settled; });
+    const due = total(months, 'amount'), paid = total(months, 'paid'), settled = total(settlements, 'amount');
+    return { months, feasible, due, paid, short: due - paid, settled, remaining: due - paid - settled };
+  }
+
+  /* One month as shown on screen: remaining = previous - settledPrevious + short - settledThis. */
+  function monthView(sum, period) {
+    const prev = sum.months.filter((m) => m.period < period);
+    const m = sum.months.find((x) => x.period === period) || null;
+    const previous = total(prev, 'short'), previousSettled = total(prev, 'settled');
+    return { month: m, previous, previousSettled,
+      remaining: previous - previousSettled + (m ? m.open : 0) };
+  }
+
+  /* Largest settlement allowed on a given date. */
+  function maxSettlement(s, accountId, date) {
+    const { months, settlements } = raw(s, accountId);
+    const cutoff = date.slice(0, 7);
+    const limits = [cutoff].concat(settlements.map((x) => x.cutoff).filter((c) => c > cutoff));
+    return Math.max(0, Math.min(...limits.map((c) =>
+      total(months.filter((m) => m.period < c), 'short') - total(settlements.filter((x) => x.cutoff <= c), 'amount'))));
+  }
+  /* Largest payment allowed on one month: only what is still open after payments AND settlements,
+     so a month shown as covered can never be paid again. */
+  function maxDuePayment(s, due) {
+    const m = summary(s, due.accountId).months.find((x) => x.due.id === due.id);
+    return m ? m.open : 0;
+  }
+
+  function newDue(s, ctx, a, period, amount) {
+    if (!isPeriod(period)) fail('err.period');
+    if (period > ctx.today().slice(0, 7)) fail('err.periodFuture');
+    if (s.dues.some((d) => d.accountId === a.id && d.period === period && !d.cancelledAt)) fail('err.dueExists');
+    const before = summary(s, a.id).months;
+    const d = { id: ctx.id(), accountId: a.id, period, amount, createdAt: ctx.now(), cancelledAt: null };
+    s.dues.push(d);
+    // A backfilled month must not silently pull a settlement away from months it already covers.
+    const after = new Map(summary(s, a.id).months.map((m) => [m.period, m.settled]));
+    if (before.some((m) => m.settled !== after.get(m.period))) fail('err.dueMovesSettlement');
+    log(s, ctx, 'due.add', a.personId, a.id, null, { period, amount });
+    return d.id;
+  }
+  /* Active monthly accounts that still need a due for this month. */
+  function pending(s, period) {
+    const missing = s.accounts.filter((a) => a.type === 'monthly' && !a.archivedAt &&
+      !s.dues.some((d) => d.accountId === a.id && d.period === period && !d.cancelledAt));
+    return { ready: missing.filter((a) => a.monthlyMinor), noAmount: missing.filter((a) => !a.monthlyMinor) };
+  }
+
+  A.register({
+    setMonthlyAmount(s, input, ctx) {
+      const a = T.openAccount(s, input.accountId, 'monthly');
+      const amount = T.readAmount(input.amount);
+      if (amount === a.monthlyMinor) return a.id;
+      log(s, ctx, 'account.monthlyAmount', a.personId, a.id, { amount: a.monthlyMinor || null }, { amount });
+      a.monthlyMinor = amount; // existing dues keep their own amount
+      return a.id;
+    },
+    createDue(s, input, ctx) {
+      const a = T.openAccount(s, input.accountId, 'monthly');
+      return newDue(s, ctx, a, input.period, T.readAmount(input.amount));
+    },
+    generateDues(s, input, ctx) {
+      const list = pending(s, input.period).ready;
+      if (!list.length) fail('err.noDuesToCreate');
+      list.forEach((a) => newDue(s, ctx, a, input.period, a.monthlyMinor));
+      return String(list.length);
+    },
+    cancelDue(s, input, ctx) {
+      const d = s.dues.find((x) => x.id === input.dueId) || fail('err.notFound');
+      if (d.cancelledAt) fail('err.stale');
+      const a = T.openAccount(s, d.accountId, 'monthly');
+      if (T.active(s, a.id).some((e) => e.dueId === d.id)) fail('err.dueHasPayments');
+      d.cancelledAt = ctx.now();
+      if (!summary(s, a.id).feasible) fail('err.dueSettled');
+      log(s, ctx, 'due.cancel', a.personId, a.id, null, { period: d.period, amount: d.amount });
+      return d.id;
+    },
+    addDuePayment(s, input, ctx) {
+      const d = s.dues.find((x) => x.id === input.dueId && !x.cancelledAt) || fail('err.notFound');
+      const a = T.openAccount(s, d.accountId, 'monthly');
+      const amount = T.readAmount(input.amount);
+      const max = maxDuePayment(s, d);
+      if (amount > max) fail('err.exceedsDue', { max: V.formatMinor(max) });
+      return T.record(s, ctx, a, 'due_payment', amount, input, d.id);
+    },
+    addSettlement(s, input, ctx) {
+      const a = T.openAccount(s, input.accountId, 'monthly');
+      const amount = T.readAmount(input.amount);
+      if (!T.isDate(input.date)) fail('err.date');
+      const max = maxSettlement(s, a.id, input.date);
+      if (amount > max) fail('err.exceedsShortfall', { max: V.formatMinor(max) });
+      return T.record(s, ctx, a, 'settlement', amount, input);
+    }
+  });
+
+  /* Every history record must carry what its screen needs. */
+  function auditOk(e) {
+    const str = (x) => typeof x === 'string', money = (x) => Number.isSafeInteger(x) && x > 0, a = e.after, b = e.before;
+    switch (e.action) {
+      case 'person.add': return !!a && str(a.name);
+      case 'person.rename': return !!a && !!b && str(a.name) && str(b.name);
+      case 'account.rename': return !!a && !!b && str(a.label) && str(b.label);
+      case 'account.add': case 'account.archive': case 'account.restore': return true;
+      case 'account.monthlyAmount': return !!a && money(a.amount);
+      case 'due.add': case 'due.cancel': return !!a && isPeriod(a.period) && money(a.amount);
+      case 'entry.add': return !!a && str(a.kind) && money(a.amount);
+      case 'entry.reverse': return !!a && str(a.kind) && money(a.amount) && str(a.reason);
+      default: return false;
+    }
+  }
+
+  /* Whole-ledger check, run after every change and on every backup. */
+  A.addVerifier((s) => {
+    const bad = () => fail('err.dataRules');
+    // keeps every possible total inside exact integer range
+    if (!Number.isSafeInteger(s.entries.concat(s.dues).reduce((n, x) => n + x.amount, 0))) fail('err.tooLarge');
+    T.verifyEntries(s);
+    if (s.people.some((p) => !A.clean(p.name))) bad();
+    for (const e of s.audit) if (!auditOk(e)) bad();
+    const accounts = new Map(s.accounts.map((a) => [a.id, a]));
+    if (new Set(s.dues.map((d) => d.id)).size !== s.dues.length) bad();
+    const seen = new Set();
+    for (const d of s.dues) {
+      const a = accounts.get(d.accountId);
+      if (!a || a.type !== 'monthly' || !isPeriod(d.period) || !Number.isSafeInteger(d.amount) || d.amount <= 0 || d.amount > V.MAX_MINOR) bad();
+      if (!d.cancelledAt) { const k = d.accountId + d.period; if (seen.has(k)) bad(); seen.add(k); }
+    }
+    for (const a of s.accounts) {
+      if (a.monthlyMinor != null && !(Number.isSafeInteger(a.monthlyMinor) && a.monthlyMinor > 0 && a.monthlyMinor <= V.MAX_MINOR)) bad();
+    }
+    const live = T.active(s);
+    for (const e of live) if (e.kind === 'due_payment' && s.dues.find((d) => d.id === e.dueId).cancelledAt) bad();
+    for (const a of s.accounts) {
+      if (a.type === 'monthly' && !summary(s, a.id, live.filter((e) => e.accountId === a.id)).feasible) bad();
+    }
+  });
+
+  /* Totals include archived accounts: archiving must never hide money still owed. */
+  function totals(s) {
+    const live = T.active(s);
+    const out = { agreed: 0, remaining: 0, dues: 0, shortfall: 0 };
+    for (const a of s.accounts) {
+      const mine = live.filter((e) => e.accountId === a.id);
+      if (a.type === 'agreement') { const x = T.agreement(s, a.id, mine); out.agreed += x.original; out.remaining += x.remaining; }
+      else { const x = summary(s, a.id, mine); out.dues += x.due; out.shortfall += x.remaining; }
+    }
+    return out;
+  }
+
+  const api = { summary, monthView, maxSettlement, maxDuePayment, pending, totals, isPeriod };
+  root.ACC = root.ACC || {};
+  root.ACC.monthly = api;
+  if (node) module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Backup file format and integrity checks. No DOM here.
+   The checksum detects damage or incomplete copies. It is not a signature against deliberate editing,
+   so imported data must also pass every accounting rule. */
+(function (root) {
+  'use strict';
+  const A = typeof module !== 'undefined' ? require('./accounts.js') : root.ACC.accounts;
+  const APP = 'accounts-hisabat', FORMAT = 1, MAX_CHARS = 100 * 1024 * 1024;
+  const fail = A.helpers.fail;
+
+  /* Stable text form: key order never changes the checksum. */
+  function canonical(v) {
+    if (Array.isArray(v)) return '[' + v.map(canonical).join(',') + ']';
+    if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map((k) => JSON.stringify(k) + ':' + canonical(v[k])).join(',') + '}';
+    return JSON.stringify(v);
+  }
+  async function checksum(data) {
+    if (!root.crypto || !root.crypto.subtle) fail('err.noCrypto');
+    const bytes = await root.crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical(data)));
+    return Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  async function build(data, now) {
+    const text = JSON.stringify({ app: APP, format: FORMAT, exportedAt: now || new Date().toISOString(), checksum: await checksum(data), data });
+    if (text.length > MAX_CHARS) fail('err.backupLarge'); // never produce a file that cannot be imported
+    return text;
+  }
+  /* Import only: nothing can be dated in the future. One day of slack covers time zones. */
+  function noFutureDates(d) {
+    const limit = A.localDate(new Date(Date.now() + 86400000));
+    if (d.entries.some((e) => e.date > limit) || d.dues.some((x) => x.period > limit.slice(0, 7))) fail('err.backupRules');
+  }
+  async function parse(text) {
+    if (typeof text !== 'string' || !text.trim()) fail('err.backupEmpty');
+    if (text.length > MAX_CHARS) fail('err.backupLarge');
+    let file;
+    try { file = JSON.parse(text.replace(/^﻿/, '')); } catch (e) { fail('err.backupJson'); }
+    if (!file || file.app !== APP || file.format !== FORMAT || !file.data) fail('err.backupForeign');
+    if (await checksum(file.data) !== file.checksum) fail('err.backupChecksum');
+    let data;
+    try { data = A.migrate(file.data); A.check(data); noFutureDates(data); } catch (e) { fail('err.backupRules'); }
+    return { data, checksum: await checksum(data), exportedAt: String(file.exportedAt || '') };
+  }
+  const counts = (d) => ({ names: d.people.length, accounts: d.accounts.length, dues: d.dues.length, entries: d.entries.length });
+
+  const api = { build, parse, checksum, counts, canonical };
+  root.ACC = root.ACC || {};
+  root.ACC.backup = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* The unified ledger: one row per financial event, each with its effect on what is owed and on cash.
+   Adding up the effects of all rows gives exactly the current balances. No DOM here. */
+(function (root) {
+  'use strict';
+  const node = typeof module !== 'undefined';
+  const A = node ? require('./accounts.js') : root.ACC.accounts;
+  const DEBT = { principal: 1, addition: 1, discount: -1, payment: -1, due_payment: -1, settlement: -1 };
+  const CASH = { cash_in: 1, cash_out: -1 };
+  const KINDS = ['principal', 'addition', 'discount', 'payment', 'due', 'due_cancel', 'due_payment', 'settlement', 'cash_in', 'cash_out'];
+
+  function rows(s) {
+    const accounts = new Map(s.accounts.map((a) => [a.id, a]));
+    const people = new Map(s.people.map((p) => [p.id, p]));
+    const dues = new Map(s.dues.map((d) => [d.id, d]));
+    const byId = new Map(s.entries.map((e) => [e.id, e]));
+    const reversed = new Set(s.entries.filter((e) => e.reversesId).map((e) => e.reversesId));
+    const out = [];
+    const add = (accountId, fields) => {
+      const a = accounts.get(accountId);
+      out.push(Object.assign({ order: out.length, account: a, person: people.get(a.personId), entry: null, source: null,
+        description: '', notes: '', period: null, status: 'normal' }, fields));
+    };
+    for (const d of s.dues) {
+      add(d.accountId, { id: d.id, kind: 'due', date: d.period + '-01', period: d.period, amount: d.amount,
+        debt: d.amount, cash: 0, createdAt: d.createdAt, status: d.cancelledAt ? 'cancelled' : 'normal' });
+      if (d.cancelledAt) add(d.accountId, { id: d.id + 'c', kind: 'due_cancel', date: A.localDate(new Date(d.cancelledAt)),
+        period: d.period, amount: d.amount, debt: -d.amount, cash: 0, createdAt: d.cancelledAt });
+    }
+    for (const e of s.entries) {
+      const sign = e.reversesId ? -1 : 1;
+      const src = e.sourceId ? byId.get(e.sourceId) : null;
+      add(e.accountId, { id: e.id, entry: e, source: src, kind: e.kind, date: e.date, amount: e.amount,
+        debt: (DEBT[e.kind] || 0) * sign * e.amount, cash: (CASH[e.kind] || 0) * sign * e.amount,
+        description: e.description, notes: e.notes, createdAt: e.createdAt,
+        period: e.dueId ? dues.get(e.dueId).period : null,
+        status: e.reversesId ? 'reversal' : reversed.has(e.id) ? 'reversed' : 'normal' });
+    }
+    return out;
+  }
+
+  /* filter: { query, personId, kind, from, to }; names(row) supplies the shown account name for search. */
+  function filter(list, f, names) {
+    const q = A.fold(f.query || '');
+    return list.filter((r) => (!f.personId || r.person.id === f.personId) &&
+      (!f.kind || (f.kind === 'reversal' ? r.status === 'reversal' : r.kind === f.kind)) &&
+      (!f.from || r.date >= f.from) && (!f.to || r.date <= f.to) &&
+      (!q || [r.person.name, names ? names(r) : r.account.label, r.description, r.notes].some((x) => A.fold(x).includes(q))));
+  }
+  const SORTS = {
+    newest: (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt) || b.order - a.order,
+    oldest: (a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt) || a.order - b.order,
+    largest: (a, b) => b.amount - a.amount || SORTS.newest(a, b),
+    smallest: (a, b) => a.amount - b.amount || SORTS.newest(a, b)
+  };
+  const sort = (list, by) => list.slice().sort(SORTS[by] || SORTS.newest);
+  const cashTotals = (list) => list.reduce((t, r) => {
+    if (r.kind === 'cash_in') t.received += r.cash;
+    if (r.kind === 'cash_out') t.paid -= r.cash;
+    t.net += r.cash; return t;
+  }, { received: 0, paid: 0, net: 0 });
+
+  const api = { rows, filter, sort, cashTotals, KINDS };
+  root.ACC = root.ACC || {};
+  root.ACC.ledger = api;
+  if (node) module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* CSV and real .xlsx files, written without libraries so the app stays one offline file.
+   A table is { headers: [text], rows: [[cell]] }; cell = string | {money: halalas} | {date: 'YYYY-MM-DD'}. */
+(function (root) {
+  'use strict';
+  const V = typeof module !== 'undefined' ? require('./validation.js') : root.ACC.validation;
+  const plain = (minor) => V.formatMinor(minor).replace(/,/g, '');
+
+  function csvCell(c) {
+    let s;
+    if (c && typeof c === 'object') s = 'money' in c ? plain(c.money) : c.date;
+    else {
+      s = String(c == null ? '' : c);
+      if (/^[\s]*[=+\-@]/.test(s) || /^[\t\r]/.test(s)) s = "'" + s; // spreadsheet formula injection
+    }
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  /* The BOM makes Excel read Arabic correctly. */
+  const csv = (t) => '﻿' + [t.headers].concat(t.rows).map((r) => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+
+  const xml = (s) => String(s).replace(/[^\t\n\r\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu, '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const column = (i) => (i >= 26 ? column(Math.floor(i / 26) - 1) : '') + String.fromCharCode(65 + (i % 26));
+  const serial = (d) => (Date.parse(d + 'T00:00:00Z') - Date.UTC(1899, 11, 30)) / 86400000;
+  function sheet(t, rtl) {
+    const cell = (c, ref, head) => {
+      if (c && typeof c === 'object') return 'money' in c ? `<c r="${ref}" s="1"><v>${plain(c.money)}</v></c>` : `<c r="${ref}" s="2"><v>${serial(c.date)}</v></c>`;
+      return `<c r="${ref}" t="inlineStr"${head ? ' s="3"' : ''}><is><t xml:space="preserve">${xml(c == null ? '' : c)}</t></is></c>`;
+    };
+    const body = [t.headers].concat(t.rows).map((r, i) => `<row r="${i + 1}">${r.map((c, j) => cell(c, column(j) + (i + 1), i === 0)).join('')}</row>`).join('');
+    return `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"${rtl ? ' rightToLeft="1"' : ''}><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="${t.headers.length}" width="20" customWidth="1"/></cols><sheetData>${body}</sheetData></worksheet>`;
+  }
+
+  const CRC = Array.from({ length: 256 }, (_, n) => { for (let k = 0; k < 8; k++) n = n & 1 ? 0xEDB88320 ^ (n >>> 1) : n >>> 1; return n >>> 0; });
+  const crc32 = (b) => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  /* A zip archive with uncompressed ("stored") files. */
+  function zip(files) {
+    const enc = new TextEncoder(), parts = [], central = [];
+    let offset = 0;
+    const header = (size, fill) => { const b = new Uint8Array(size), v = new DataView(b.buffer); fill((at, x) => v.setUint16(at, x, true), (at, x) => v.setUint32(at, x, true)); return b; };
+    for (const [path, text] of files) {
+      const name = enc.encode(path), data = enc.encode(text), crc = crc32(data);
+      const local = header(30, (u16, u32) => { u32(0, 0x04034b50); u16(4, 20); u16(12, 33); u32(14, crc); u32(18, data.length); u32(22, data.length); u16(26, name.length); });
+      central.push(header(46, (u16, u32) => { u32(0, 0x02014b50); u16(4, 20); u16(6, 20); u16(14, 33); u32(16, crc); u32(20, data.length); u32(24, data.length); u16(28, name.length); u32(42, offset); }), name);
+      parts.push(local, name, data);
+      offset += local.length + name.length + data.length;
+    }
+    const dirSize = central.reduce((n, b) => n + b.length, 0);
+    const end = header(22, (u16, u32) => { u32(0, 0x06054b50); u16(8, files.length); u16(10, files.length); u32(12, dirSize); u32(16, offset); });
+    const all = parts.concat(central, [end]), out = new Uint8Array(all.reduce((n, b) => n + b.length, 0));
+    all.reduce((at, b) => { out.set(b, at); return at + b.length; }, 0);
+    return out;
+  }
+
+  function xlsx(t, sheetName, rtl) {
+    const ns = 'http://schemas.openxmlformats.org', doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+    const type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.';
+    const files = [
+      ['[Content_Types].xml', `<Types xmlns="${ns}/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${type}sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="${type}worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="${type}styles+xml"/></Types>`],
+      ['_rels/.rels', `<Relationships xmlns="${ns}/package/2006/relationships"><Relationship Id="rId1" Type="${ns}/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+      ['xl/workbook.xml', `<workbook xmlns="${ns}/spreadsheetml/2006/main" xmlns:r="${ns}/officeDocument/2006/relationships"><sheets><sheet name="${xml(sheetName.replace(/[\\\/?*\[\]:]/g, ' ').slice(0, 31))}" sheetId="1" r:id="rId1"/></sheets></workbook>`],
+      ['xl/_rels/workbook.xml.rels', `<Relationships xmlns="${ns}/package/2006/relationships"><Relationship Id="rId1" Type="${ns}/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${ns}/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+      ['xl/styles.xml', `<styleSheet xmlns="${ns}/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="4"><xf/><xf numFmtId="4" applyNumberFormat="1"/><xf numFmtId="164" applyNumberFormat="1"/><xf fontId="1" applyFont="1"/></cellXfs></styleSheet>`],
+      ['xl/worksheets/sheet1.xml', sheet(t, rtl)]
+    ];
+    return zip(files.map(([n, x]) => [n, doc + x]));
+  }
+
+  const api = { csv, xlsx };
+  root.ACC = root.ACC || {};
+  root.ACC.exporter = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Durable data in IndexedDB. Each change reads the latest data, applies the rule and writes
+   inside ONE transaction, so two open tabs cannot overwrite each other.
+   If saving is impossible the change is rejected; there is no silent in-memory fallback. */
+(function (root) {
+  'use strict';
+  const DB = 'accounts-hisabat', STORE = 'data', KEY = 'state'; // name is specific: github.io origins are shared
+  const coded = (code, cause) => { const e = new Error(code); e.code = code; e.cause = cause; return e; };
+
+  function create(domain, factory) {
+    let opening = null;
+    function open() {
+      if (opening) return opening;
+      opening = new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(coded('err.dbUnavailable')), 8000);
+        let req;
+        try { req = factory().open(DB, 1); }
+        catch (e) { clearTimeout(timer); reject(coded('err.dbUnavailable', e)); return; }
+        req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+        req.onsuccess = () => {
+          clearTimeout(timer);
+          req.result.onversionchange = () => { req.result.close(); opening = null; };
+          req.result.onclose = () => { opening = null; };
+          resolve(req.result);
+        };
+        req.onerror = () => { clearTimeout(timer); reject(coded('err.dbUnavailable', req.error)); };
+      });
+      opening.catch(() => { opening = null; });
+      return opening;
+    }
+    function read(raw) {
+      if (raw === undefined) return domain.empty();
+      const data = domain.migrate(raw);
+      try { domain.check(data); } catch (e) { throw coded('err.dataInvalid', e); } // never overwrite what we cannot read
+      return data;
+    }
+    async function load() {
+      const db = await open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readonly');
+        const req = tx.objectStore(STORE).get(KEY);
+        tx.oncomplete = () => { try { resolve(read(req.result)); } catch (e) { reject(e); } };
+        tx.onerror = tx.onabort = () => reject(coded('err.dbUnavailable', tx.error));
+      });
+    }
+    /* One read-write transaction. work(os, raw) returns the result to report after commit. */
+    async function write(work) {
+      const db = await open();
+      return new Promise((resolve, reject) => {
+        let result, problem;
+        const tx = db.transaction(STORE, 'readwrite', { durability: 'strict' });
+        const os = tx.objectStore(STORE);
+        const req = os.get(KEY);
+        req.onsuccess = () => {
+          try { result = work(os, req.result); }
+          catch (e) { problem = e; tx.abort(); }
+        };
+        tx.oncomplete = () => resolve(result); // success is reported only after the commit
+        tx.onabort = () => reject(problem && problem.code ? problem : coded('err.saveFailed', problem || tx.error));
+      });
+    }
+    const mutate = (op, input) => write((os, raw) => {
+      const result = domain.apply(read(raw), op, input);
+      if (raw && raw.schema === 1) os.put(raw, 'snapshot-schema1'); // keep the pre-upgrade copy
+      os.put(result.state, KEY);
+      return result;
+    });
+    /* Replaces everything. The data being replaced is kept as the recovery copy in the SAME transaction.
+       expected = text of the data the user saw when confirming; if it changed since, refuse. */
+    const replace = (data, expected, same) => write((os, raw) => {
+      const current = read(raw);
+      if (same(current) !== expected) throw coded('err.stale');
+      domain.check(data);
+      os.put({ savedAt: new Date().toISOString(), data: current }, 'recovery');
+      os.put(data, KEY);
+      return { state: data };
+    });
+    async function recovery() {
+      const db = await open();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readonly');
+        const req = tx.objectStore(STORE).get('recovery');
+        tx.oncomplete = () => resolve(req.result || null);
+        tx.onerror = tx.onabort = () => reject(coded('err.dbUnavailable', tx.error));
+      });
+    }
+    return { load, mutate, replace, recovery };
+  }
+
+  root.ACC = root.ACC || {};
+  root.ACC.repo = { create, DB };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Unified ledger screen: filters, sorting, export, printing and the change history. */
+(function (root) {
+  'use strict';
+  function create(core) {
+    const { t, getLang, toast, el, userText, button, accountName, formatDate, describe } = core;
+    const { ledger: L, exporter: X, validation: V, accounts: domain, transactions: T } = root.ACC;
+    const $ = (s) => document.querySelector(s);
+    const PAGE = 100;
+    let shown = PAGE, printing = false, auditShown = PAGE;
+
+    const kindName = (r) => (r.status === 'reversal' ? t('entry.reversalOf') + ' ' : '') + t('kind.' + r.kind);
+    const rowAccount = (r) => accountName(r.account);
+    const description = (r) => [r.description, r.period ? t('entry.forMonth') + ' ' + r.period : ''].filter(Boolean).join(' — ');
+    const statusName = (r) => t('status.' + r.status);
+    // isolate keeps the sign on the correct side of the number inside Arabic text
+    const signed = (n) => '\u2066' + (n > 0 ? '+' : n < 0 ? '−' : '') + V.formatMinor(Math.abs(n)) + '\u2069';
+    const debtLabel = (r) => t(r.account.type === 'agreement' ? 'effect.remaining' : 'effect.shortfall');
+    function effectText(r) {
+      const parts = [];
+      if (r.debt) parts.push(debtLabel(r) + ' ' + signed(r.debt));
+      if (r.cash) parts.push(t('effect.cash') + ' ' + signed(r.cash));
+      return parts.join(' · ');
+    }
+
+    const filters = () => ({ query: $('#l-search').value, personId: $('#l-person').value, kind: $('#l-kind').value, from: $('#l-from').value, to: $('#l-to').value });
+    const current = (s) => L.sort(L.filter(L.rows(s), filters(), rowAccount), $('#l-sort').value);
+
+    function fillSelects(s) {
+      const person = $('#l-person'), kind = $('#l-kind'), keepP = person.value, keepK = kind.value;
+      person.replaceChildren(el('option', { value: '', text: t('ledger.allNames') }),
+        ...s.people.slice().sort((a, b) => a.name.localeCompare(b.name, 'ar')).map((p) => el('option', { value: p.id, text: p.name })));
+      kind.replaceChildren(el('option', { value: '', text: t('ledger.allKinds') }),
+        ...L.KINDS.map((k) => el('option', { value: k, text: t('kind.' + k) })),
+        el('option', { value: 'reversal', text: t('ledger.reversalsOnly') }));
+      person.value = keepP; kind.value = keepK;
+    }
+    function rowActions(r) {
+      const e = r.entry;
+      if (!e || r.status !== 'normal' || r.account.archivedAt) return [];
+      const list = [];
+      if (T.PAYMENTS.includes(e.kind) && !T.linkedReceipt(core.getState(), e.id)) list.push(button('entry.receive', () => core.money().open('addReceiptFor', r.account, { entryId: e.id, entry: e })));
+      list.push(button('entry.reverse', () => core.money().open('reverseEntry', r.account, { entryId: e.id, entry: e })));
+      return list;
+    }
+    function tableRow(r) {
+      const cell = (key, ...kids) => el('td', { 'data-label': t(key) }, el('div', {}, ...kids));
+      const note = (labelKey, text) => el('div', { class: 'sub' }, el('span', { class: 'muted', text: t(labelKey) + ': ' }), userText('span', text));
+      const desc = [];
+      if (r.description) desc.push(userText('span', r.description));
+      if (r.period) desc.push(el('div', { class: 'sub muted', text: t('entry.forMonth') + ' ' + core.money().monthName(r.period) }));
+      if (r.notes && r.status !== 'reversal') desc.push(note('field.notes', r.notes));
+      return el('tr', { class: 'st-' + r.status, 'data-kind': r.kind },
+        cell('field.date', el('span', { text: core.money().day(r.date) })),
+        cell('field.name', el('a', { class: 'account-link', href: '#person-' + r.person.id }, userText('strong', r.person.name))),
+        cell('ledger.account', el('a', { class: 'account-link', href: '#account-' + r.account.id }, r.account.label ? userText('span', r.account.label) : el('span', { text: accountName(r.account) }))),
+        cell('ledger.kind', el('span', { text: kindName(r) }), r.status === 'reversed' || r.status === 'cancelled' ? el('span', { class: 'chip warn', text: statusName(r) }) : null),
+        cell('ledger.amount', core.money().money(r.amount)),
+        cell('field.description', ...(desc.length ? desc : [el('span', { class: 'muted', text: '—' })])),
+        cell('ledger.effect', el('span', { class: 'effect', text: effectText(r) }), el('div', { class: 'row-actions no-print' }, ...rowActions(r))));
+    }
+    function render() {
+      const s = core.getState(), box = $('#ledger-view');
+      box.replaceChildren();
+      ['#l-csv', '#l-xlsx', '#l-print'].forEach((id) => { $(id).disabled = !s; });
+      $('#audit-view').replaceChildren();
+      if (!s) return;
+      fillSelects(s);
+      const rows = current(s), totals = L.cashTotals(rows), all = L.rows(s).length;
+      $('#l-csv').disabled = $('#l-xlsx').disabled = $('#l-print').disabled = !rows.length;
+      $('#l-count').textContent = t('ledger.shown', { n: rows.length, total: all });
+      const f = filters(), active = [];
+      if (f.query) active.push(t('ledger.search') + ': ' + f.query);
+      if (f.personId) active.push(t('field.name') + ': ' + $('#l-person').selectedOptions[0].textContent);
+      if (f.kind) active.push(t('ledger.kind') + ': ' + $('#l-kind').selectedOptions[0].textContent);
+      if (f.from) active.push(t('ledger.from') + ': ' + f.from);
+      if (f.to) active.push(t('ledger.to') + ': ' + f.to);
+      $('#print-head').textContent = [t('app.name'), t('nav.ledger'), formatDate(new Date().toISOString()), active.length ? active.join(' | ') : t('ledger.noFilter')].join(' — ');
+      const sum = (key, value) => el('div', { class: 'row', 'data-k': key }, el('dt', { text: t(key) }), el('dd', {}, core.money().money(value)));
+      box.append(el('dl', { class: 'card rows ledger-totals' }, sum('ledger.in', totals.received), sum('ledger.out', totals.paid), sum('ledger.net', totals.net)));
+      if (!rows.length) { box.append(el('p', { class: 'card muted', text: t(all ? 'ledger.noMatch' : 'ledger.empty') })); }
+      else {
+        const heads = ['field.date', 'field.name', 'ledger.account', 'ledger.kind', 'ledger.amount', 'field.description', 'ledger.effect'];
+        box.append(el('div', { class: 'table-wrap' }, el('table', { class: 'ledger' },
+          el('thead', {}, el('tr', {}, ...heads.map((k) => el('th', { scope: 'col', text: t(k) })))),
+          el('tbody', {}, ...rows.slice(0, printing ? rows.length : shown).map(tableRow)))));
+        if (rows.length > shown && !printing) box.append(button('ledger.more', () => { shown += PAGE; render(); }, 'no-print'));
+      }
+      const events = s.audit.slice().reverse();
+      $('#audit-view').append(el('ol', { class: 'history' }, ...events.slice(0, auditShown).map((e) => {
+        const li = describe(e), p = s.people.find((x) => x.id === e.personId);
+        if (p) li.prepend(userText('strong', p.name, 'user who'));
+        return li;
+      })));
+      if (events.length > auditShown) $('#audit-view').append(button('ledger.more', () => { auditShown += PAGE; render(); }));
+      if (!events.length) $('#audit-view').append(el('p', { class: 'muted', text: t('entry.none') }));
+    }
+
+    /* What is exported is exactly what the filters show, all of it, in the shown order. */
+    function table(s) {
+      const headers = ['field.date', 'field.name', 'ledger.account', 'ledger.kind', 'ledger.amount', 'ledger.debtEffect', 'ledger.cashEffect', 'ledger.status', 'field.description', 'field.notes', 'ledger.forMonth', 'ledger.recordedAt'].map((k) => t(k));
+      return { headers, rows: current(s).map((r) => [{ date: r.date }, r.person.name, rowAccount(r), kindName(r), { money: r.amount }, { money: r.debt }, { money: r.cash }, statusName(r), r.description, r.status === 'reversal' ? '' : r.notes, r.period || '', r.createdAt]) };
+    }
+    function save(content, type, name) {
+      const url = URL.createObjectURL(new Blob([content], { type }));
+      const link = el('a', { href: url, download: name });
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+    function exportAs(kind) {
+      try {
+        const s = core.getState(), name = 'accounts-ledger-' + domain.localDate(new Date()) + '.' + kind;
+        if (kind === 'csv') save(X.csv(table(s)), 'text/csv;charset=utf-8', name);
+        else save(X.xlsx(table(s), t('nav.ledger'), getLang() === 'ar'), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', name);
+        toast('toast.exportStarted', 'ok');
+      } catch (e) { toast('err.exportFailed', 'bad'); }
+    }
+
+    function init() {
+      const changed = () => { shown = PAGE; render(); };
+      ['#l-search', '#l-from', '#l-to'].forEach((id) => $(id).addEventListener('input', changed));
+      ['#l-person', '#l-kind', '#l-sort'].forEach((id) => $(id).addEventListener('change', changed));
+      $('#l-clear').addEventListener('click', () => { ['#l-search', '#l-person', '#l-kind', '#l-from', '#l-to'].forEach((id) => { $(id).value = ''; }); $('#l-sort').value = 'newest'; changed(); });
+      $('#l-csv').addEventListener('click', () => exportAs('csv'));
+      $('#l-xlsx').addEventListener('click', () => exportAs('xlsx'));
+      $('#l-print').addEventListener('click', () => window.print());
+      window.addEventListener('beforeprint', () => { printing = true; render(); });
+      window.addEventListener('afterprint', () => { printing = false; render(); });
+    }
+    return { init, render };
+  }
+  root.ACC.ledgerUI = { create };
+})(window);
+</script>
+<script>
+/* Screens for agreement accounts, monthly accounts, dashboard figures and cash receipts. */
+(function (root) {
+  'use strict';
+  function create(core) {
+    const { t, getLang, toast, say, clearMessage, confirm, el, userText, button, accountName, formatDate, commit } = core;
+    const { accounts: domain, transactions: T, monthly: M, validation: V } = root.ACC;
+    const $ = (s) => document.querySelector(s);
+    const today = () => domain.localDate(new Date());
+    let accountId = null, form = null, busy = false, period = today().slice(0, 7);
+
+    const money = (minor) => el('span', { class: 'money' }, el('bdi', { dir: 'ltr', text: V.formatMinor(minor) }), el('small', { text: ' ' + t('cur.sar') }));
+    const locale = () => (getLang() === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB');
+    const monthName = (p) => new Intl.DateTimeFormat(locale(), { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(p + '-01T00:00:00Z'));
+    const day = (d) => new Intl.DateTimeFormat(locale(), { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(d + 'T00:00:00Z'));
+    const line = (key, value, cls) => el('div', { class: 'row ' + (cls || ''), 'data-k': key }, el('dt', { text: t(key) }), el('dd', {}, money(value)));
+    const table = (...rows) => el('dl', { class: 'rows' }, ...rows);
+    const chip = (key, cls) => el('span', { class: 'chip ' + (cls || ''), text: t(key) });
+    const personOf = (s, a) => s.people.find((p) => p.id === a.personId);
+    const nameNode = (a, tag) => (a.label ? userText(tag, a.label) : el(tag, { text: accountName(a) }));
+    const actions = (...b) => el('div', { class: 'row-actions' }, ...b);
+
+    /* ---------- one dialog for every money action ---------- */
+    const FORMS = {
+      setPrincipal: { title: 'money.principal', f: ['amount', 'date', 'text'], dateLabel: 'field.agreementDate' },
+      addPayment: { title: 'money.payment', f: ['amount', 'date', 'text', 'cash'] },
+      addAddition: { title: 'money.addition', f: ['amount', 'date', 'text'] },
+      addDiscount: { title: 'money.discount', f: ['amount', 'date', 'text'] },
+      addDuePayment: { title: 'money.duePayment', f: ['amount', 'date', 'text', 'cash'] },
+      addSettlement: { title: 'money.settlement', f: ['amount', 'date', 'text', 'cash'] },
+      setMonthlyAmount: { title: 'money.monthlyAmount', f: ['amount'] },
+      createDue: { title: 'money.createDue', f: ['period', 'amount'] },
+      reverseEntry: { title: 'money.reverse', f: ['reason'] },
+      addReceiptFor: { title: 'money.receiveLater', f: ['date', 'text'], dateLabel: 'field.receiptDate' },
+      addCashIn: { title: 'money.cashIn', f: ['who', 'amount', 'date', 'text'], help: 'money.cashInHelp' },
+      addCashOut: { title: 'money.cashOut', f: ['who', 'amount', 'date', 'text'], help: 'money.cashOutHelp' }
+    };
+    /* Standalone cash is always linked to a name and an account chosen here. */
+    function fillAccounts() {
+      const s = core.getState(), id = $('#m-person').value;
+      const list = s.accounts.filter((a) => a.personId === id && !a.archivedAt);
+      $('#m-account').replaceChildren(el('option', { value: '', text: t('money.chooseAccount') }), ...list.map((a) => el('option', { value: a.id, text: accountName(a) })));
+      if (list.length === 1) $('#m-account').value = list[0].id;
+      whoChanged();
+    }
+    function whoChanged() {
+      if (!form || !FORMS[form.op].f.includes('who')) return;
+      const s = core.getState(), a = s.accounts.find((x) => x.id === $('#m-account').value);
+      form.base.accountId = a ? a.id : '';
+      // warn when this account has payments still waiting for their cash
+      const waiting = a && form.op === 'addCashIn' && T.active(s, a.id).some((e) => T.PAYMENTS.includes(e.kind) && !T.linkedReceipt(s, e.id));
+      $('#m-waiting').hidden = !waiting;
+    }
+    function limit(s) {
+      const { op, base } = form;
+      if (op === 'addPayment' || op === 'addDiscount') return T.agreement(s, base.accountId).remaining;
+      if (op === 'addDuePayment') return M.maxDuePayment(s, s.dues.find((d) => d.id === base.dueId));
+      if (op === 'addSettlement') return T.isDate($('#m-date').value) ? M.maxSettlement(s, base.accountId, $('#m-date').value) : null;
+      return null;
+    }
+    function showLimit() {
+      const s = core.getState(), max = form && s ? limit(s) : null, node = $('#m-limit');
+      node.hidden = max === null;
+      node.replaceChildren(...(max === null ? [] : [el('span', { text: t(form.op === 'addSettlement' ? 'money.maxSettlement' : 'money.max') + ' ' }), money(max)]));
+    }
+    function fillPeriod(selectMonth, selectYear, value) {
+      const [y, m] = value.split('-');
+      const now = Number(today().slice(0, 4)), years = [];
+      for (let i = now; i >= Math.min(now - 6, Number(y)); i--) years.push(String(i));
+      selectMonth.replaceChildren(...Array.from({ length: 12 }, (_, i) => {
+        const v = String(i + 1).padStart(2, '0');
+        return el('option', { value: v, text: new Intl.DateTimeFormat(locale(), { month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2000, i, 1))) });
+      }));
+      selectYear.replaceChildren(...years.map((v) => el('option', { value: v, text: v })));
+      selectMonth.value = m; selectYear.value = y;
+    }
+    function open(op, a, extra) {
+      const s = core.getState(), cfg = FORMS[op], x = extra || {};
+      $('#money-form').reset();
+      clearMessage('money-error');
+      // opId is fixed for the life of this window: saving it twice is impossible.
+      form = { op, base: { accountId: a ? a.id : '', dueId: x.dueId, entryId: x.entryId, opId: domain.context().id() } };
+      $('#money-title').textContent = t(cfg.title);
+      const context = $('#money-context');
+      context.replaceChildren(...(a ? [userText('strong', personOf(s, a).name), nameNode(a, 'span')] : []));
+      if (cfg.help) context.append(el('p', { class: 'muted', text: t(cfg.help) }));
+      if (x.dueId) context.append(el('span', { text: monthName(s.dues.find((d) => d.id === x.dueId).period) }));
+      if (x.entry) context.append(el('span', { text: t('kind.' + x.entry.kind) }), money(x.entry.amount),
+        el('p', { class: 'muted', text: t(op === 'addReceiptFor' ? 'money.receiveLaterHelp' : x.entry.kind === 'cash_in' && x.entry.sourceId ? 'money.reverseReceiptHelp' : 'money.reverseHelp') }));
+      ['who', 'amount', 'period', 'date', 'text', 'cash', 'reason'].forEach((k) => { $('#mf-' + k).hidden = !cfg.f.includes(k); });
+      $('#mf-dup').hidden = true;
+      $('#m-date-label').textContent = t(cfg.dateLabel || 'field.date');
+      $('#m-date').value = today(); $('#m-date').max = today(); $('#m-date').min = '2000-01-01';
+      if (cfg.f.includes('period')) fillPeriod($('#m-month'), $('#m-year'), x.period || period);
+      if ((op === 'createDue' || op === 'setMonthlyAmount') && a.monthlyMinor) $('#m-amount').value = V.formatMinor(a.monthlyMinor);
+      $('#m-waiting').hidden = true;
+      if (cfg.f.includes('who')) {
+        const people = s.people.filter((p) => s.accounts.some((y) => y.personId === p.id && !y.archivedAt)).sort((p, q) => p.name.localeCompare(q.name, 'ar'));
+        $('#m-person').replaceChildren(el('option', { value: '', text: t('money.chooseName') }), ...people.map((p) => el('option', { value: p.id, text: p.name })));
+        fillAccounts();
+      }
+      showLimit();
+      $('#money-dialog').showModal();
+    }
+    async function submit(event) {
+      event.preventDefault();
+      if (busy || !form) return;
+      if (FORMS[form.op].f.includes('who') && !form.base.accountId) { say('money-error', 'err.chooseAccount', 'bad'); return; }
+      busy = true; $('#money-save').disabled = true;
+      clearMessage('money-error');
+      const cash = document.querySelector('input[name="m-cash"]:checked');
+      const input = Object.assign({}, form.base, {
+        amount: $('#m-amount').value, date: $('#m-date').value, period: $('#m-year').value + '-' + $('#m-month').value,
+        description: $('#m-desc').value, notes: $('#m-notes').value, reason: $('#m-reason').value,
+        cash: cash ? cash.value : '', confirmDuplicate: !$('#mf-dup').hidden && $('#m-dup').checked
+      });
+      try {
+        await commit(form.op, input);
+        $('#money-dialog').close();
+        toast('toast.saved', 'ok');
+      } catch (e) {
+        if (e.code === 'err.similar') $('#mf-dup').hidden = false;
+        say('money-error', e.code || 'err.saveFailed', 'bad', e.params);
+        if (e.code === 'err.dataRules') await core.refresh();
+      } finally { busy = false; $('#money-save').disabled = false; }
+    }
+
+    async function run(op, input, doneKey, params) {
+      try { await commit(op, input); toast(doneKey, 'ok', params); }
+      catch (e) { toast(e.code || 'err.saveFailed', 'bad', e.params); await core.refresh(); }
+    }
+    const cancelDue = (d) => confirm('due.cancel', 'due.cancelConfirm', () => run('cancelDue', { dueId: d.id }, 'toast.saved'));
+
+    /* ---------- account page ---------- */
+    function entryItem(s, a, e, gone, readOnly) {
+      const isReversal = !!e.reversesId, isReversed = gone.has(e.id);
+      const li = el('li', { class: 'entry' + (isReversed ? ' reversed' : ''), 'data-kind': e.kind },
+        el('div', { class: 'entry-head' }, el('strong', { text: (isReversal ? t('entry.reversalOf') + ' ' : '') + t('kind.' + e.kind) }), money(e.amount)));
+      const meta = el('div', { class: 'chips' }, el('span', { class: 'muted', text: day(e.date) }));
+      if (e.dueId) meta.append(el('span', { class: 'muted', text: t('entry.forMonth') + ' ' + monthName(s.dues.find((d) => d.id === e.dueId).period) }));
+      const receipt = T.PAYMENTS.includes(e.kind) && !isReversal ? T.linkedReceipt(s, e.id) : null;
+      if (T.PAYMENTS.includes(e.kind)) {
+        if (isReversal) { if (s.entries.some((c) => c.kind === 'cash_in' && c.sourceId === e.id)) meta.append(chip('entry.cashReversed')); }
+        else if (!isReversed) meta.append(chip(receipt ? 'entry.cashYes' : 'entry.cashNo', receipt ? 'type' : ''));
+      }
+      if (e.kind === 'cash_in' && e.sourceId) meta.append(chip('entry.receiptOfPayment'));
+      if (isReversed) meta.append(chip('entry.reversed', 'warn'));
+      li.append(meta);
+      if (e.description) li.append(el('p', {}, el('span', { class: 'muted', text: t(isReversal ? 'field.reason' : 'field.description') + ': ' }), userText('span', e.description)));
+      if (e.notes && !isReversal) li.append(el('p', {}, el('span', { class: 'muted', text: t('field.notes') + ': ' }), userText('span', e.notes)));
+      if (!readOnly && !isReversal && !isReversed) {
+        const reverse = (target, key) => button(key, () => open('reverseEntry', a, { entryId: target.id, entry: target }));
+        li.append(actions(
+          T.PAYMENTS.includes(e.kind) && !receipt ? button('entry.receive', () => open('addReceiptFor', a, { entryId: e.id, entry: e })) : null,
+          receipt ? reverse(receipt, 'entry.reverseReceipt') : null,
+          reverse(e, 'entry.reverse')));
+      }
+      return li;
+    }
+    function log(s, a, readOnly) {
+      const list = s.entries.filter((e) => e.accountId === a.id && !(e.kind === 'cash_in' && e.sourceId &&
+        !(e.reversesId && s.entries.find((x) => x.id === e.reversesId).sourceId === e.sourceId))).reverse();
+      const gone = T.reversedIds(s);
+      return el('section', { class: 'card', 'data-section': 'entries' }, el('h2', { text: t('entry.log') }),
+        list.length ? el('ol', { class: 'history' }, ...list.map((e) => entryItem(s, a, e, gone, readOnly))) : el('p', { class: 'muted', text: t('entry.none') }));
+    }
+    function agreementView(s, a, readOnly) {
+      const x = T.agreement(s, a.id);
+      if (!x.head) {
+        return [el('section', { class: 'card' }, el('p', { text: t('agreement.none') }),
+          readOnly ? null : button('money.principal', () => open('setPrincipal', a), 'primary'))];
+      }
+      return [el('section', { class: 'card', 'data-section': 'summary' },
+        el('p', { class: 'muted', text: t('field.agreementDate') + ': ' + day(x.head.date) }),
+        table(line('sum.original', x.original), line('sum.additions', x.additions), line('sum.discounts', x.discounts),
+          line('sum.paid', x.paid), line('sum.remaining', x.remaining, 'total')),
+        el('p', { class: 'muted', text: t('sum.formula') })),
+      readOnly ? null : actions(button('money.payment', () => open('addPayment', a), 'primary'),
+        button('money.addition', () => open('addAddition', a)), button('money.discount', () => open('addDiscount', a)))];
+    }
+    function monthRows(sum, p) {
+      const v = M.monthView(sum, p), m = v.month;
+      return table(line('m.due', m ? m.amount : 0), line('m.paid', m ? m.paid : 0), line('m.short', m ? m.short : 0),
+        line('m.previous', v.previous), line('m.previousSettled', v.previousSettled), line('m.remaining', v.remaining, 'total'));
+    }
+    const laterNote = (m) => (m && m.settled ? el('p', { class: 'muted note' }, el('span', { text: t('m.settledThis') + ' ' }), money(m.settled)) : null);
+    function monthlyView(s, a, readOnly) {
+      const sum = M.summary(s, a.id);
+      const head = el('section', { class: 'card', 'data-section': 'summary' },
+        el('p', {}, el('span', { text: t('m.fixed') + ' ' }), a.monthlyMinor ? money(a.monthlyMinor) : el('strong', { text: t('m.notSet') })),
+        readOnly ? null : actions(button('money.monthlyAmount', () => open('setMonthlyAmount', a))),
+        table(line('m.totalDue', sum.due), line('m.totalPaid', sum.paid), line('m.totalSettled', sum.settled), line('m.totalRemaining', sum.remaining, 'total')),
+        el('p', { class: 'muted', text: t('m.fifo') }));
+      const months = sum.months.slice().reverse().map((m) => el('article', { class: 'card', 'data-period': m.period },
+        el('h2', { text: monthName(m.period) }), monthRows(sum, m.period), laterNote(m),
+        readOnly ? null : actions(m.open > 0 ? button('money.duePayment', () => open('addDuePayment', a, { dueId: m.due.id }), 'primary') : null,
+          button('due.cancel', () => cancelDue(m.due)))));
+      return [head,
+        readOnly ? null : actions(button('money.createDue', () => open('createDue', a, { period: today().slice(0, 7) }), 'primary'),
+          button('money.settlement', () => open('addSettlement', a))),
+        months.length ? el('div', { class: 'grid' }, ...months) : el('p', { class: 'card muted', text: t('m.noDues') })];
+    }
+    function renderAccount(s) {
+      const box = $('#account-view');
+      box.replaceChildren();
+      if (!s || !accountId) return;
+      const a = s.accounts.find((x) => x.id === accountId);
+      if (!a) { box.append(el('a', { class: 'back', href: '#accounts', text: t('person.back') }), el('p', { class: 'card', text: t('err.notFound') })); return; }
+      const p = personOf(s, a), readOnly = !!a.archivedAt;
+      const view = a.type === 'agreement' ? agreementView(s, a, readOnly) : monthlyView(s, a, readOnly);
+      box.append(...[el('a', { class: 'back', href: '#person-' + p.id }, userText('span', p.name)),
+        el('header', { class: 'page-head' }, nameNode(a, 'h1'), chip('type.' + a.type, 'type')),
+        readOnly ? el('p', { class: 'notice', text: t('account.readOnly') }) : null,
+        ...view, log(s, a, readOnly)].filter(Boolean));
+    }
+
+    /* ---------- months page ---------- */
+    function renderMonths(s) {
+      fillPeriod($('#p-month'), $('#p-year'), period);
+      const current = today().slice(0, 7), future = period > current;
+      $('#p-next').disabled = period >= current;
+      const box = $('#months-view');
+      box.replaceChildren();
+      const pend = s ? M.pending(s, period) : { ready: [], noAmount: [] };
+      $('#generate-btn').disabled = !s || future || !pend.ready.length;
+      if (!s) return;
+      const info = future ? t('months.future') : t('months.pending', { n: pend.ready.length }) +
+        (pend.noAmount.length ? ' ' + t('months.noAmount', { n: pend.noAmount.length }) : '');
+      box.append(el('p', { class: 'muted', role: 'status', text: info }));
+      const rows = s.accounts.filter((a) => a.type === 'monthly').map((a) => {
+        const sum = M.summary(s, a.id);
+        return { a, sum, m: sum.months.find((x) => x.period === period) };
+      }).filter((r) => r.m || !r.a.archivedAt);
+      if (!rows.length) { box.append(el('p', { class: 'card muted', text: t('months.none') })); return; }
+      const add = (k) => rows.reduce((n, r) => n + (r.m ? r.m[k] : 0), 0);
+      box.append(el('section', { class: 'card', 'data-section': 'month-total' }, el('h2', { text: t('months.totals') + ' ' + monthName(period) }),
+        table(line('m.due', add('amount')), line('m.paid', add('paid')), line('m.short', add('short')))));
+      box.append(el('div', { class: 'grid' }, ...rows.map(({ a, sum, m }) => el('article', { class: 'card', 'data-account': a.id },
+        el('a', { class: 'account-link', href: '#account-' + a.id }, userText('strong', personOf(s, a).name), nameNode(a, 'span')),
+        a.archivedAt ? chip('account.archivedChip', 'warn') : null,
+        m ? null : el('p', { class: 'notice', text: t('months.noDue') }),
+        monthRows(sum, period), laterNote(m),
+        a.archivedAt ? null : actions(
+          m ? (m.open > 0 ? button('money.duePayment', () => open('addDuePayment', a, { dueId: m.due.id }), 'primary') : null)
+            : (future ? null : button('money.createDue', () => open('createDue', a, { period }), 'primary')),
+          button('money.settlement', () => open('addSettlement', a)))))));
+    }
+
+    /* ---------- dashboard and cash receipts ---------- */
+    function renderTotals(s) {
+      const values = s ? Object.assign(M.totals(s), T.cash(s)) : null;
+      document.querySelectorAll('[data-total]').forEach((n) => n.replaceChildren(values ? el('bdi', { dir: 'ltr', text: V.formatMinor(values[n.dataset.total]) }) : '—'));
+      const box = $('#cash-view');
+      box.replaceChildren();
+      $('#cash-in-btn').disabled = $('#cash-out-btn').disabled = !s || !s.accounts.some((a) => !a.archivedAt);
+      if (!s) return;
+      const gone = T.reversedIds(s);
+      const moves = s.entries.filter((e) => T.CASH.includes(e.kind)).reverse().sort((x, y) => y.date.localeCompare(x.date));
+      box.append(el('section', { class: 'card', 'data-section': 'cash-summary' },
+        table(line('dash.received', values.received), line('dash.paid', values.paid), line('dash.cash', values.balance, 'total')),
+        values.balance < 0 ? el('p', { class: 'notice bad', text: t('cash.negative') }) : null,
+        el('p', { class: 'muted', text: t('dash.cashFormula') })));
+      box.append(el('section', { class: 'card', 'data-section': 'cash-log' }, el('h2', { text: t('cash.log') }),
+        moves.length ? el('ol', { class: 'history' }, ...moves.map((e) => {
+          const a = s.accounts.find((x) => x.id === e.accountId), isReversal = !!e.reversesId, isReversed = gone.has(e.id);
+          const li = el('li', { class: 'entry' + (isReversed ? ' reversed' : ''), 'data-kind': e.kind },
+            el('div', { class: 'entry-head' }, el('strong', { text: (isReversal ? t('entry.reversalOf') + ' ' : '') + t('kind.' + e.kind) }), money(e.amount)),
+            el('a', { class: 'account-link', href: '#account-' + a.id }, userText('strong', personOf(s, a).name), nameNode(a, 'span')),
+            el('div', { class: 'chips' }, el('span', { class: 'muted', text: day(e.date) }),
+              e.sourceId && !isReversal ? chip('entry.receiptOfPayment') : null, isReversed ? chip('entry.reversed', 'warn') : null));
+          if (e.description) li.append(el('p', {}, el('span', { class: 'muted', text: t(isReversal ? 'field.reason' : 'field.description') + ': ' }), userText('span', e.description)));
+          if (e.notes && !isReversal) li.append(el('p', {}, el('span', { class: 'muted', text: t('field.notes') + ': ' }), userText('span', e.notes)));
+          if (!isReversal && !isReversed && !a.archivedAt) li.append(actions(button('entry.reverse', () => open('reverseEntry', a, { entryId: e.id, entry: e }))));
+          return li;
+        })) : el('p', { class: 'muted', text: t('cash.none') })));
+    }
+
+    /* Extra detail for the person page and its change history. */
+    function accountFigure(s, a) {
+      if (a.type === 'agreement') {
+        const x = T.agreement(s, a.id);
+        return x.head ? el('span', {}, el('span', { text: t('sum.remaining') + ': ' }), money(x.remaining)) : el('span', { class: 'muted', text: t('agreement.noneShort') });
+      }
+      return el('span', {}, el('span', { text: t('m.totalRemaining') + ': ' }), money(M.summary(s, a.id).remaining));
+    }
+    function auditDetail(e) {
+      const parts = [];
+      if (e.action === 'entry.add' || e.action === 'entry.reverse') parts.push(el('span', { text: t('kind.' + e.after.kind) }), money(e.after.amount));
+      if (e.action === 'entry.reverse') parts.push(userText('span', e.after.reason));
+      if (e.action.startsWith('due.')) parts.push(el('span', { text: monthName(e.after.period) }), money(e.after.amount));
+      if (e.action === 'account.monthlyAmount') parts.push(money(e.after.amount));
+      return parts;
+    }
+
+    function setPeriod(p) { period = p; renderMonths(core.getState()); }
+    const shift = (n) => { const d = new Date(period + '-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() + n); const p = d.toISOString().slice(0, 7); if (p >= '2000-01') setPeriod(p); };
+    function init() {
+      $('#money-form').addEventListener('submit', submit);
+      $('#cash-in-btn').addEventListener('click', () => open('addCashIn', null));
+      $('#cash-out-btn').addEventListener('click', () => open('addCashOut', null));
+      $('#m-person').addEventListener('change', fillAccounts);
+      $('#m-account').addEventListener('change', whoChanged);
+      $('#money-cancel').addEventListener('click', () => $('#money-dialog').close());
+      $('#m-date').addEventListener('input', showLimit);
+      // The duplicate confirmation applies only to the exact values it was shown for.
+      ['#m-amount', '#m-date', '#m-account', '#m-person'].forEach((id) => $(id).addEventListener('input', () => { $('#mf-dup').hidden = true; $('#m-dup').checked = false; }));
+      const pick = () => setPeriod($('#p-year').value + '-' + $('#p-month').value);
+      $('#p-month').addEventListener('change', pick); $('#p-year').addEventListener('change', pick);
+      $('#p-prev').addEventListener('click', () => shift(-1)); $('#p-next').addEventListener('click', () => shift(1));
+      $('#generate-btn').addEventListener('click', () => {
+        const target = period, n = M.pending(core.getState(), target).ready.length;
+        confirm('months.generate', 'months.generateConfirm', () => run('generateDues', { period: target }, 'toast.duesCreated'), { n, month: monthName(target) });
+      });
+    }
+    return {
+      init, accountFigure, auditDetail, open, money, day, monthName,
+      render(s) { renderTotals(s); renderMonths(s); renderAccount(s); },
+      showAccount(id) { accountId = id; renderAccount(core.getState()); }
+    };
+  }
+  root.ACC.financeUI = { create };
+})(window);
+</script>
+<script>
+/* Backup page: export, inspect, replace after confirmation, and return to the replaced data. */
+(function (root) {
+  'use strict';
+  function create(core) {
+    const { t, toast, say, clearMessage, confirm, el, button, formatDate, prefs } = core;
+    const { backup: B } = root.ACC;
+    const $ = (s) => document.querySelector(s);
+    let candidate = null, recovery = null, turn = 0;
+
+    const fileName = () => 'accounts-backup-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.json';
+    const countsLine = (d) => t('backup.counts', B.counts(d));
+
+    async function exportText() { return B.build(await core.repo.load()); }
+    function exported(key) {
+      prefs.save({ lastExport: new Date().toISOString() });
+      say('export-result', key, 'ok');
+      renderLast();
+    }
+    async function download() {
+      try {
+        const url = URL.createObjectURL(new Blob([await exportText()], { type: 'application/json' }));
+        const link = el('a', { href: url, download: fileName() });
+        document.body.append(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        exported('backup.downloadStarted'); // a page cannot confirm the file was actually saved
+      } catch (e) { say('export-result', e.code || 'err.exportFailed', 'bad'); }
+    }
+    async function copy() {
+      let text;
+      try { text = await exportText(); }
+      catch (e) { say('export-result', e.code || 'err.exportFailed', 'bad'); return; }
+      const area = $('#export-text');
+      try { await navigator.clipboard.writeText(text); area.hidden = true; exported('backup.copied'); }
+      catch (e) { area.value = text; area.hidden = false; area.focus(); area.select(); exported('backup.copyManual'); }
+    }
+
+    async function inspect(text) {
+      const mine = ++turn;
+      candidate = null; clearMessage('import-result'); renderCandidate();
+      try {
+        const parsed = await B.parse(text);
+        const current = await core.repo.load();
+        if (mine !== turn) return;
+        parsed.current = current;
+        parsed.identical = parsed.checksum === await B.checksum(current);
+        candidate = parsed;
+        say('import-result', 'backup.valid', 'ok');
+      } catch (e) { if (mine === turn) say('import-result', e.code || 'err.backupJson', 'bad'); }
+      renderCandidate();
+    }
+    function renderCandidate() {
+      const box = $('#import-preview');
+      box.replaceChildren();
+      if (!candidate) return;
+      const c = candidate;
+      box.append(el('p', { text: t('backup.exportedAt') + ' ' + formatDate(c.exportedAt) }),
+        el('p', { text: t('backup.inFile') + ' ' + countsLine(c.data) }),
+        el('p', { text: t('backup.onDevice') + ' ' + countsLine(c.current) }));
+      if (c.identical) { box.append(el('p', { class: 'notice', text: t('backup.identical') })); return; }
+      if ((prefs.load().imported || []).includes(c.checksum)) box.append(el('p', { class: 'notice bad', text: t('backup.importedBefore') }));
+      const a = B.counts(c.data), b = B.counts(c.current);
+      if (Object.keys(a).some((k) => a[k] < b[k]) || c.current.audit.length > c.data.audit.length) box.append(el('p', { class: 'notice bad', text: t('backup.fewer') }));
+      box.append(button('backup.replace', () => confirm('backup.replace', 'backup.replaceConfirm', () => apply(c, true)), 'primary'));
+    }
+    async function apply(c, fromFile) {
+      try {
+        await core.replace(c.data, B.canonical(c.current), B.canonical);
+        if (fromFile) prefs.save({ imported: (prefs.load().imported || []).concat(c.checksum).slice(-50) });
+        candidate = null; renderCandidate(); clearMessage('import-result');
+        $('#import-file').value = ''; $('#import-text').value = '';
+        toast(fromFile ? 'toast.imported' : 'toast.recovered', 'ok');
+      } catch (e) { toast(e.code || 'err.saveFailed', 'bad'); candidate = null; renderCandidate(); }
+      await refresh();
+    }
+    function renderLast() {
+      const at = prefs.load().lastExport;
+      $('#last-export').textContent = at ? t('backup.last') + ' ' + formatDate(at) : t('backup.never');
+    }
+    function renderRecovery() {
+      const box = $('#recovery-view');
+      box.replaceChildren();
+      if (!recovery) { box.append(el('p', { class: 'muted', text: t('backup.noRecovery') })); return; }
+      box.append(el('p', { text: formatDate(recovery.savedAt) }), el('p', { text: countsLine(recovery.data) }),
+        button('backup.recover', async () => {
+          const current = await core.repo.load(), data = recovery.data;
+          confirm('backup.recover', 'backup.recoverConfirm', () => apply({ data, current }, false));
+        }));
+    }
+    async function refresh() {
+      try { recovery = await core.repo.recovery(); } catch (e) { recovery = null; }
+      renderRecovery();
+    }
+    function init() {
+      $('#export-btn').addEventListener('click', download);
+      $('#copy-btn').addEventListener('click', copy);
+      $('#import-file').addEventListener('change', async () => {
+        const file = $('#import-file').files[0];
+        if (!file) return;
+        if (file.size > 300 * 1024 * 1024) { say('import-result', 'err.backupLarge', 'bad'); return; }
+        try { await inspect(await file.text()); } catch (e) { say('import-result', 'err.backupJson', 'bad'); }
+      });
+      $('#inspect-btn').addEventListener('click', () => inspect($('#import-text').value));
+      $('#import-text').addEventListener('input', () => { turn++; candidate = null; renderCandidate(); clearMessage('import-result'); });
+      refresh();
+    }
+    return { init, refresh, render() { renderLast(); renderCandidate(); renderRecovery(); } };
+  }
+  root.ACC.backupUI = { create };
+})(window);
+</script>
+<script>
+/* Screens for names and accounts. User text is only ever inserted with textContent. */
+(function (root) {
+  'use strict';
+  function create({ t, getLang, toast, say, clearMessage, confirm, prefs }) {
+    let money = null, backups = null, ledger = null;
+    const { accounts: domain, repo: repoLib } = root.ACC;
+    const repo = repoLib.create(domain, () => root.indexedDB);
+    let state = null, problem = null, personId = null, formAction = null, busy = false;
+    let channel = null;
+    try { channel = new BroadcastChannel('accounts-hisabat'); } catch (e) { /* older browser */ }
+
+    const $ = (s) => document.querySelector(s);
+    function el(tag, props, ...kids) {
+      const n = document.createElement(tag);
+      Object.entries(props || {}).forEach(([k, v]) => {
+        if (k === 'class') n.className = v;
+        else if (k === 'text') n.textContent = v;
+        else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+        else n.setAttribute(k, v);
+      });
+      n.append(...kids.filter(Boolean));
+      return n;
+    }
+    const userText = (tag, text, cls) => el(tag, { text, dir: 'auto', class: cls || 'user' });
+    const button = (key, onclick, cls) => el('button', { type: 'button', class: 'btn ' + (cls || ''), text: t(key), onclick });
+    const accountName = (a) => a.label || t('account.default.' + a.type, { n: a.seq });
+    const formatDate = (iso) => {
+      const d = new Date(iso);
+      return isNaN(d) ? '' : new Intl.DateTimeFormat(getLang() === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB',
+        { dateStyle: 'medium', timeStyle: 'short' }).format(d);
+    };
+
+    function renderCounts() {
+      $('#count-names').textContent = state ? String(state.people.length) : '—';
+      $('#count-accounts').textContent = state ? String(state.accounts.filter((a) => !a.archivedAt).length) : '—';
+    }
+    function typeChips(list) {
+      return domain.TYPES.filter((x) => list.some((a) => a.type === x))
+        .map((x) => el('span', { class: 'chip type', text: t('type.' + x) }));
+    }
+    function renderList() {
+      const box = $('#people-list');
+      box.replaceChildren();
+      if (!state) return;
+      const query = $('#people-search').value, filter = $('#people-filter').value;
+      const rows = domain.search(state, query, filter);
+      $('#people-count').textContent = t('people.shown', { n: rows.length, total: state.people.length });
+      if (!rows.length) {
+        box.append(el('p', { class: 'card muted', text: t(state.people.length ? 'people.noMatch' : 'people.empty') }));
+        return;
+      }
+      rows.forEach((r) => {
+        const info = [t('people.active', { n: r.active.length })];
+        if (r.archived.length) info.push(t('people.archived', { n: r.archived.length }));
+        box.append(el('a', { class: 'card person', href: '#person-' + r.person.id },
+          userText('strong', r.person.name),
+          el('span', { class: 'muted', text: info.join(' · ') }),
+          el('span', { class: 'chips' }, ...typeChips(r.active))));
+      });
+    }
+
+    function accountRow(a) {
+      const actions = a.archivedAt
+        ? [button('account.restore', () => ask('restoreAccount', a, 'account.restore', 'account.restoreConfirm', 'toast.restored'))]
+        : [button('account.editLabel', () => openForm('renameAccount', a)),
+          button('account.archive', () => ask('archiveAccount', a, 'account.archive', 'account.archiveConfirm', 'toast.archived'))];
+      return el('li', { class: 'account', 'data-account': a.id },
+        el('div', {}, a.label ? userText('strong', a.label) : el('strong', { text: accountName(a) }),
+          el('span', { class: 'muted', text: t('type.' + a.type) })),
+        money.accountFigure(state, a),
+        el('div', { class: 'row-actions' }, el('a', { class: 'btn primary open', href: '#account-' + a.id, text: t('account.open') }), ...actions));
+    }
+    function describe(e) {
+      const a = state.accounts.find((x) => x.id === e.accountId);
+      const li = el('li', {}, el('span', { text: t('audit.' + e.action) }));
+      if (e.action === 'person.add') li.append(userText('span', e.after.name));
+      else if (e.action === 'person.rename') li.append(userText('span', e.before.name), el('span', { text: t('audit.to') }), userText('span', e.after.name));
+      else if (e.action === 'account.rename') {
+        const shown = (label) => label ? userText('span', label) : el('span', { text: t('account.noLabel') });
+        li.append(shown(e.before.label), el('span', { text: t('audit.to') }), shown(e.after.label));
+      } else if (a) li.append(a.label ? userText('span', a.label) : el('span', { text: accountName(a) }));
+      li.append(...money.auditDetail(e));
+      li.append(el('time', { class: 'muted', datetime: e.at, text: formatDate(e.at) }));
+      return li;
+    }
+    function renderPerson() {
+      const box = $('#person-view');
+      box.replaceChildren();
+      if (!state || !personId) return;
+      const p = state.people.find((x) => x.id === personId);
+      const back = el('a', { class: 'back', href: '#accounts', text: t('person.back') });
+      if (!p) { box.append(back, el('p', { class: 'card', text: t('err.notFound') })); return; }
+      const mine = state.accounts.filter((a) => a.personId === p.id);
+      const section = (key, list, emptyKey) => el('section', { class: 'card', 'data-section': key },
+        el('h2', { text: t(key) }),
+        list.length ? el('ul', { class: 'plan' }, ...list.map(accountRow)) : el('p', { class: 'muted', text: t(emptyKey) }));
+      box.append(back,
+        el('header', { class: 'page-head' }, userText('h1', p.name), button('person.rename', () => openForm('renamePerson', p))),
+        button('account.add', () => openForm('addAccount', p), 'primary'),
+        section('person.activeAccounts', mine.filter((a) => !a.archivedAt), 'person.noActive'),
+        section('person.archivedAccounts', mine.filter((a) => a.archivedAt), 'person.noArchived'),
+        el('details', { class: 'card' }, el('summary', { text: t('person.history') }),
+          el('ol', { class: 'history' }, ...state.audit.filter((e) => e.personId === p.id).reverse().map(describe))));
+    }
+    function renderStatus() {
+      const banner = $('#data-banner');
+      banner.hidden = !problem;
+      banner.textContent = problem ? t(problem) : '';
+      $('#add-person-btn').disabled = !state;
+    }
+    function render() { renderStatus(); renderCounts(); renderList(); renderPerson(); money.render(state); backups.render(); ledger.render(); }
+
+    async function refresh() {
+      try { state = await repo.load(); problem = null; }
+      catch (e) { state = null; problem = e.code || 'err.dbUnavailable'; }
+      render();
+    }
+    async function commit(op, input) {
+      const result = await repo.mutate(op, input);
+      state = result.state; problem = null;
+      announce();
+      // Ask the browser not to evict the data. It may refuse; Settings shows the answer.
+      if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(showPersistence, () => {});
+      render();
+      return result.id;
+    }
+    function announce() { if (channel) channel.postMessage('changed'); }
+    async function replace(data, expected, same) {
+      state = (await repo.replace(data, expected, same)).state;
+      problem = null; announce(); render();
+    }
+    function showPersistence(granted) {
+      const node = $('#persist-status');
+      node.dataset.i18n = granted ? 'data.persisted' : 'data.notPersisted';
+      node.textContent = t(node.dataset.i18n);
+    }
+
+    function ask(op, a, titleKey, messageKey, doneKey) {
+      confirm(titleKey, messageKey, async () => {
+        try { await commit(op, { accountId: a.id }); toast(doneKey, 'ok'); }
+        catch (e) { toast(e.code || 'err.saveFailed', 'bad'); await refresh(); }
+      });
+    }
+
+    const FORMS = {
+      addPerson: { title: 'people.add', name: true, types: true, done: 'toast.personAdded' },
+      renamePerson: { title: 'person.rename', name: true, done: 'toast.renamed' },
+      addAccount: { title: 'account.add', type: true, label: true, done: 'toast.accountAdded' },
+      renameAccount: { title: 'account.editLabel', label: true, done: 'toast.labelSaved' }
+    };
+    function openForm(op, target) {
+      const f = FORMS[op];
+      $('#entity-form').reset();
+      clearMessage('form-error');
+      $('#form-title').textContent = t(f.title);
+      $('#field-name').hidden = !f.name; $('#field-types').hidden = !f.types;
+      $('#field-type').hidden = !f.type; $('#field-label').hidden = !f.label;
+      const base = {};
+      if (op === 'renamePerson') { base.personId = target.id; base.expected = target.name; $('#in-name').value = target.name; }
+      if (op === 'addAccount') base.personId = target.id;
+      if (op === 'renameAccount') { base.accountId = target.id; base.expected = target.label; $('#in-label').value = target.label; }
+      formAction = { op, base, done: f.done };
+      $('#form-dialog').showModal();
+    }
+    async function submit(event) {
+      event.preventDefault();
+      if (busy || !formAction) return; // a double tap must not save twice
+      busy = true; $('#form-save').disabled = true;
+      clearMessage('form-error');
+      const { op, base, done } = formAction;
+      const input = Object.assign({}, base, {
+        name: $('#in-name').value, label: $('#in-label').value, type: $('#in-type').value,
+        types: domain.TYPES.filter((x) => $('#in-' + x).checked)
+      });
+      try {
+        const id = await commit(op, input);
+        $('#form-dialog').close();
+        toast(done, 'ok');
+        if (op === 'addPerson') location.hash = 'person-' + id;
+      } catch (e) {
+        say('form-error', e.code || 'err.saveFailed', 'bad');
+      } finally { busy = false; $('#form-save').disabled = false; }
+    }
+
+    function init() {
+      $('#add-person-btn').addEventListener('click', () => openForm('addPerson'));
+      $('#people-search').addEventListener('input', renderList);
+      $('#people-filter').addEventListener('change', renderList);
+      $('#entity-form').addEventListener('submit', submit);
+      $('#form-cancel').addEventListener('click', () => $('#form-dialog').close());
+      money.init(); backups.init(); ledger.init();
+      if (channel) channel.onmessage = () => { refresh(); backups.refresh(); };
+      window.addEventListener('pageshow', (e) => { if (e.persisted) refresh(); });
+      if (navigator.storage && navigator.storage.persisted) navigator.storage.persisted().then(showPersistence, () => {});
+      return refresh();
+    }
+    const core = { t, getLang, toast, say, clearMessage, confirm, prefs, el, userText, button, accountName, formatDate, commit, refresh, replace, repo, describe, money: () => money, getState: () => state };
+    ledger = root.ACC.ledgerUI.create(core);
+    money = root.ACC.financeUI.create(core);
+    backups = root.ACC.backupUI.create(core);
+    return { init, render, showPerson(id) { personId = id; renderPerson(); }, showAccount(id) { money.showAccount(id); } };
+  }
+  root.ACC.accountsUI = { create };
+})(window);
+</script>
+<script>
+/* Application shell: routing, language, dialogs and messages. */
+(function () {
+  'use strict';
+  const { i18n, validation, storage } = window.ACC;
+  const store = storage.create(() => window.localStorage);
+  let lang = i18n.normalize(store.load().lang);
+  const messages = {}; // result lines that must be re-translated on language change
+
+  const $ = (s, el) => (el || document).querySelector(s);
+  const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+  const t = (k, p) => i18n.t(lang, k, p);
+
+  const ICONS = {
+    dashboard: 'M4 11l8-7 8 7v9h-5v-6H9v6H4z',
+    accounts: 'M9 11a4 4 0 100-8 4 4 0 000 8zm-7 9c0-4 3-6 7-6s7 2 7 6M16 4a4 4 0 010 7m2 3c3 .6 4 3 4 6',
+    monthly: 'M4 6h16v14H4zM4 10h16M8 3v5m8-5v5',
+    cash: 'M3 7h18v11H3zM12 15a2.5 2.5 0 100-5 2.5 2.5 0 000 5z',
+    ledger: 'M6 3h13v18H6zM9 8h7M9 12h7M9 16h4',
+    reports: 'M4 20h16M7 20v-7m5 7V5m5 15v-10',
+    backup: 'M12 4v11m-5-5l5 5 5-5M5 20h14',
+    prefs: 'M4 7h10m4 0h2M4 17h4m4 0h8M16 5v4M10 15v4',
+    more: 'M5 12h.01M12 12h.01M19 12h.01'
+  };
+  const icon = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[n]}"/></svg>`;
+  const ROUTES = ['dashboard', 'accounts', 'monthly', 'cash', 'ledger', 'reports', 'backup', 'prefs'];
+  const TABS = ['dashboard', 'accounts', 'monthly', 'cash'];
+  const SHORT = { accounts: 'nav.accountsShort', monthly: 'nav.monthlyShort' };
+
+  function link(route, key) {
+    return `<a href="#${route}" data-route="${route}">${icon(route)}<span data-i18n="${key}"></span></a>`;
+  }
+  function buildNav() {
+    $('#sidebar-links').innerHTML = ROUTES.map((r) => link(r, 'nav.' + r)).join('');
+    $('#tabbar').innerHTML = TABS.map((r) => link(r, SHORT[r] || 'nav.' + r)).join('') +
+      `<button type="button" id="more-btn" aria-haspopup="dialog">${icon('more')}<span data-i18n="nav.more"></span></button>`;
+    $('#more-links').innerHTML = ROUTES.filter((r) => !TABS.includes(r)).map((r) => link(r, 'nav.' + r)).join('');
+  }
+
+  let ui = null;
+
+  function render() {
+    const html = document.documentElement;
+    html.lang = lang;
+    html.dir = i18n.dir(lang);
+    document.title = t('app.name');
+    $$('[data-i18n]').forEach((el) => {
+      el.textContent = t(el.dataset.i18n, el.dataset.n ? { n: el.dataset.n } : undefined);
+    });
+    $$('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+    Object.keys(messages).forEach(paint);
+    renderStorage();
+    if (ui) ui.render();
+  }
+  function renderStorage() {
+    const ok = store.selfTest();
+    const el = $('#storage-status');
+    el.textContent = t(ok ? 'prefs.storageOk' : 'prefs.storageBad');
+    el.dataset.state = ok ? 'ok' : 'bad';
+    $('#storage-banner').hidden = ok;
+  }
+
+  function paint(id) {
+    const m = messages[id], el = document.getElementById(id);
+    el.textContent = m ? t(m.key, m.params) : '';
+    el.dataset.state = m ? m.state : '';
+  }
+  function say(id, key, state, params) { messages[id] = { key, state, params }; paint(id); }
+
+  let toastTimer;
+  function toast(key, state, params) {
+    say('toast', key, state, params);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { delete messages.toast; paint('toast'); }, 3500);
+  }
+
+  function setLang(next) {
+    lang = i18n.normalize(next);
+    const saved = store.save({ lang });
+    render();
+    toast(saved ? 'lang.changed' : 'prefs.checkFail', saved ? 'ok' : 'bad');
+  }
+
+  function route() {
+    const wanted = location.hash.slice(1);
+    if (wanted === 'main') return; // the skip link is not a page
+    const match = /^(person|account)-([a-f0-9]+)$/.exec(wanted);
+    const current = match ? match[1] : ROUTES.includes(wanted) ? wanted : 'dashboard';
+    const section = match ? 'accounts' : current;
+    $$('dialog[open]').forEach((d) => d.close());
+    if (ui) {
+      ui.showPerson(current === 'person' ? match[2] : null);
+      ui.showAccount(current === 'account' ? match[2] : null);
+    }
+    $$('[data-page]').forEach((p) => { p.hidden = p.dataset.page !== current; });
+    $$('[data-route]').forEach((a) => {
+      if (a.dataset.route === section) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    $('#more-btn').classList.toggle('active', !TABS.includes(section));
+    window.scrollTo(0, 0);
+  }
+
+  let onConfirm = null;
+  function confirm(titleKey, messageKey, action, params) {
+    onConfirm = action;
+    [['#confirm-title', titleKey], ['#confirm-message', messageKey]].forEach(([id, key]) => {
+      $(id).textContent = t(key, params);
+    });
+    $('#confirm-dialog').showModal();
+  }
+  function clearMessage(id) { delete messages[id]; paint(id); }
+
+  function init() {
+    buildNav();
+    ui = window.ACC.accountsUI.create({ t, getLang: () => lang, toast, say, clearMessage, confirm, prefs: store });
+    $('#lang-btn').addEventListener('click', () => setLang(lang === 'ar' ? 'en' : 'ar'));
+    $('#more-btn').addEventListener('click', () => $('#more-dialog').showModal());
+    $('#more-close').addEventListener('click', () => $('#more-dialog').close());
+    // Close on tap too: tapping the current page's link fires no hashchange.
+    $('#more-links').addEventListener('click', (e) => { if (e.target.closest('a')) $('#more-dialog').close(); });
+    $('#check-btn').addEventListener('click', () => {
+      const ok = store.selfTest();
+      say('check-result', ok ? 'prefs.checkOk' : 'prefs.checkFail', ok ? 'ok' : 'bad');
+    });
+    $('#amount-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const r = validation.parseAmount($('#amount-input').value);
+      $('#amount-input').setAttribute('aria-invalid', String(!r.ok));
+      if (r.ok) say('amount-result', 'amount.ok', 'ok', { value: validation.formatMinor(r.minor) });
+      else say('amount-result', r.error, 'bad');
+    });
+    // The confirm step is built into the page: some embedded viewers block window.confirm().
+    $('#reset-btn').addEventListener('click', () => confirm('reset.title', 'reset.confirm', () => {
+      const ok = store.reset();
+      if (ok) lang = 'ar';
+      render();
+      toast(ok ? 'reset.done' : 'reset.fail', ok ? 'ok' : 'bad');
+    }));
+    $('#confirm-no').addEventListener('click', () => $('#confirm-dialog').close());
+    $('#confirm-yes').addEventListener('click', () => {
+      const action = onConfirm;
+      onConfirm = null;
+      $('#confirm-dialog').close();
+      if (action) action();
+    });
+    window.addEventListener('hashchange', route);
+    render();
+    route();
+    document.documentElement.classList.add('ready');
+    ui.init();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
