@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101112">
+<title>حسابات | ACCOUNTS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Charcoal and gold. A deliberate single dark theme. */
+:root{
+  color-scheme:dark;
+  --bg:#101112; --surface:#18191b; --raised:#202225;
+  --line:#2e3033; --gold:#cfa84e; --gold-soft:#e8d29a; --gold-line:#6b5a2f;
+  --text:#f1eee6; --muted:#aaa69c; --ok:#7fc59a; --bad:#ee8f84;
+  --font:"IBM Plex Sans Arabic","SF Arabic","Geeza Pro","Noto Sans Arabic","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.7 var(--font)}
+[hidden]{display:none!important}
+h1,h2,p,dl,dd,ul{margin:0}
+h1{font-size:1.45rem;line-height:1.4}
+h2{font-size:1rem;font-weight:600;color:var(--gold-soft)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--gold-soft);outline-offset:2px}
+main:focus{outline:none}
+svg{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.skip{position:absolute;inset-inline-start:8px;top:-100px;background:var(--raised);padding:8px 12px;z-index:30}
+.skip:focus{top:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--gold-line);background:var(--bg)}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand strong{font-size:1.2rem;font-weight:700;color:var(--gold);line-height:1.5}
+.brand small,.muted,.stage{color:var(--muted);font-size:.875rem}
+.btn{min-height:48px;padding:8px 20px;border:1px solid var(--line);border-radius:10px;background:var(--raised);color:var(--text);font:600 .95rem var(--font);cursor:pointer;touch-action:manipulation}
+.btn:hover{border-color:var(--gold-line)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:#17130a}
+.btn.lang{min-width:56px;border-color:var(--gold-line);color:var(--gold-soft)}
+main{padding:16px;min-width:0}
+main>section{display:flex;flex-direction:column;gap:16px}
+.notice{padding:10px 14px;margin-bottom:16px;border:1px solid var(--gold-line);border-radius:10px;color:var(--gold-soft);font-size:.9rem}
+.notice.bad{border-color:var(--bad);color:var(--bad)}
+.page-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.chip{border:1px solid var(--line);border-radius:99px;padding:2px 12px;font-size:.8rem;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+/* The cash balance is the one framed element: cash is the only real money on screen. */
+.vault{border:1px solid var(--gold-line);outline:1px solid var(--gold-line);outline-offset:-6px;border-radius:14px;padding:24px 20px;background:var(--surface)}
+.balance{font-size:2.8rem;line-height:1.3;color:var(--gold);font-variant-numeric:tabular-nums}
+.balance .cur{font-size:1rem;color:var(--muted)}
+.formula{color:var(--muted);font-size:.875rem;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.rows .row,.flows .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.flows .row:first-child{border-top:0}
+dt{min-width:0}
+dd{display:flex;flex-direction:column;align-items:flex-end;line-height:1.3;flex:none}
+dd b{font-size:1.25rem}
+dd small{color:var(--muted);font-size:.75rem}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+.plan{list-style:none;padding:0}
+.plan li{padding:12px 0;border-top:1px solid var(--line)}
+label{font-weight:500}
+input{min-height:48px;width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:600 1.15rem var(--font)}
+input[aria-invalid="true"]{border-color:var(--bad)}
+.status:empty{display:none}
+.status[data-state="ok"]{color:var(--ok)}
+.status[data-state="bad"]{color:var(--bad)}
+dialog{width:min(420px,calc(100% - 32px));border:1px solid var(--gold-line);border-radius:14px;background:var(--surface);color:var(--text);padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.72)}
+.actions{display:flex;gap:12px;margin-top:20px}
+.actions .btn{flex:1}
+#more-links a,#sidebar-links a{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 12px;border-radius:10px;color:var(--muted)}
+#more-links a[aria-current],#sidebar-links a[aria-current]{background:var(--raised);color:var(--gold-soft)}
+.sheet .btn{width:100%;margin-top:12px}
+.toast{position:fixed;left:16px;right:16px;margin-inline:auto;max-width:420px;bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:12px 16px;border:1px solid var(--ok);border-radius:10px;background:var(--raised);text-align:center;z-index:20;pointer-events:none}
+.toast:empty{display:none}
+.toast[data-state="bad"]{border-color:var(--bad)}
+.noscript{margin:24px 16px;padding:16px;border:1px solid var(--bad);border-radius:10px;text-align:center}
+html:not(.ready) .app{visibility:hidden}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+<style>
+/* Phone first: bottom tab bar. Desktop: sidebar. */
+.sidebar{display:none}
+main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:10;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding:4px max(4px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
+.tabbar a,.tabbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;border:0;border-radius:10px;background:none;color:var(--muted);font:500 .74rem var(--font);cursor:pointer}
+.tabbar [aria-current],.tabbar .active{color:var(--gold);background:var(--raised)}
+@media (min-width:640px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flows{display:grid;grid-template-columns:1fr 1fr;column-gap:32px}
+  .flows .row{border-top:0}
+}
+@media (min-width:960px){
+  .app{display:grid;grid-template-columns:260px minmax(0,1fr);grid-template-rows:auto 1fr;min-height:100vh}
+  .topbar{grid-column:1/-1;padding-inline:24px}
+  .sidebar{display:flex;flex-direction:column;justify-content:space-between;gap:16px;padding:16px 12px;border-inline-end:1px solid var(--line)}
+  .tabbar{display:none}
+  main{padding:24px 32px 48px;width:100%;max-width:1040px}
+  .toast{bottom:24px}
+}
+</style>
+</head>
+<body>
+<noscript><p class="noscript">يلزم فتح الملف في متصفح يشغّل JavaScript.<br><span dir="ltr">Open this file in a browser with JavaScript enabled.</span></p></noscript>
+<div class="app">
+<a class="skip" href="#main" data-i18n="a11y.skip"></a>
+<header class="topbar">
+  <div class="brand"><strong data-i18n="app.name"></strong><small data-i18n="app.tagline"></small></div>
+  <button type="button" id="lang-btn" class="btn lang" data-i18n="lang.button" data-i18n-aria="lang.switch"></button>
+</header>
+<nav class="sidebar" data-i18n-aria="a11y.mainNav"><div id="sidebar-links"></div><p class="stage" data-i18n="app.stage"></p></nav>
+<main id="main" tabindex="-1">
+<p id="storage-banner" class="notice bad" data-i18n="prefs.storageBad" hidden></p>
+<p class="notice" data-i18n="state.noData"></p>
+
+<section data-page="dashboard">
+  <header class="page-head"><h1 data-i18n="dash.title"></h1><span class="chip" data-i18n="app.stage"></span></header>
+  <div class="vault">
+    <h2 data-i18n="dash.cash"></h2>
+    <p class="balance"><b aria-hidden="true">—</b> <span class="cur" data-i18n="cur.sar"></span></p>
+    <p class="formula" data-i18n="dash.cashFormula"></p>
+    <dl class="flows"><div class="row"><dt data-i18n="dash.received"></dt><dd><b aria-hidden="true">—</b><small data-i18n="state.notYet"></small></dd></div><div class="row"><dt data-i18n="dash.paid"></dt><dd><b aria-hidden="true">—</b><small data-i18n="state.notYet"></small></dd></div></dl>
+  </div>
+  <div class="grid">
+    <section class="card"><h2 data-i18n="dash.agreements"></h2><dl class="rows"><div class="row"><dt data-i18n="dash.agreed"></dt><dd><b aria-hidden="true">—</b><small data-i18n="state.notYet"></small></dd></div><div class="row"><dt data-i18n="dash.remaining"></dt><dd><b aria-hidden="true">—</b><small data-i18n="state.notYet"></small></dd></div></dl></section>
+    <section class="card"><h2 data-i18n="dash.monthly"></h2><dl class="rows"><div class="row"><dt data-i18n="dash.dues"></dt><dd><b aria-hidden="true">—</b><small data-i18n="state.notYet"></small></dd></div><div class="row"><dt data-i18n="dash.shortfall"></dt><dd><b aria-hidden="true">—</b><small data-i18n="state.notYet"></small></dd></div></dl></section>
+    <section class="card"><h2 data-i18n="dash.directory"></h2><dl class="rows"><div class="row"><dt data-i18n="dash.names"></dt><dd><b aria-hidden="true">—</b><small data-i18n="state.notYet"></small></dd></div><div class="row"><dt data-i18n="dash.count"></dt><dd><b aria-hidden="true">—</b><small data-i18n="state.notYet"></small></dd></div></dl></section>
+    <section class="card"><h2 data-i18n="dash.charts"></h2><p class="muted" data-i18n="dash.chartsNote"></p></section>
+  </div>
+</section>
+
+<section data-page="accounts" hidden>
+  <header class="page-head"><h1 data-i18n="nav.accounts"></h1><span class="chip" data-i18n="state.phase" data-n="2"></span></header>
+  <div class="card"><h2 data-i18n="state.planned"></h2><ul class="plan"><li data-i18n="accounts.f1"></li><li data-i18n="accounts.f2"></li><li data-i18n="accounts.f3"></li><li data-i18n="accounts.f4"></li></ul></div>
+</section>
+<section data-page="monthly" hidden>
+  <header class="page-head"><h1 data-i18n="nav.monthly"></h1><span class="chip" data-i18n="state.phase" data-n="3"></span></header>
+  <div class="card"><h2 data-i18n="state.planned"></h2><ul class="plan"><li data-i18n="monthly.f1"></li><li data-i18n="monthly.f2"></li><li data-i18n="monthly.f3"></li><li data-i18n="monthly.f4"></li></ul></div>
+</section>
+<section data-page="cash" hidden>
+  <header class="page-head"><h1 data-i18n="nav.cash"></h1><span class="chip" data-i18n="state.phase" data-n="4"></span></header>
+  <div class="card"><h2 data-i18n="state.planned"></h2><ul class="plan"><li data-i18n="cash.f1"></li><li data-i18n="cash.f2"></li><li data-i18n="cash.f3"></li></ul></div>
+  <div class="card"><h2 data-i18n="cash.rules"></h2><ul class="plan"><li data-i18n="cash.r1"></li><li data-i18n="cash.r2"></li><li data-i18n="cash.r3"></li><li data-i18n="cash.r4"></li></ul></div>
+</section>
+<section data-page="ledger" hidden>
+  <header class="page-head"><h1 data-i18n="nav.ledger"></h1><span class="chip" data-i18n="state.phase" data-n="4"></span></header>
+  <div class="card"><h2 data-i18n="state.planned"></h2><ul class="plan"><li data-i18n="ledger.f1"></li><li data-i18n="ledger.f2"></li><li data-i18n="ledger.f3"></li><li data-i18n="ledger.f4"></li></ul></div>
+</section>
+<section data-page="reports" hidden>
+  <header class="page-head"><h1 data-i18n="nav.reports"></h1><span class="chip" data-i18n="state.phase" data-n="5"></span></header>
+  <div class="card"><h2 data-i18n="state.planned"></h2><ul class="plan"><li data-i18n="reports.f1"></li><li data-i18n="reports.f2"></li><li data-i18n="reports.f3"></li><li data-i18n="reports.f4"></li></ul></div>
+</section>
+<section data-page="backup" hidden>
+  <header class="page-head"><h1 data-i18n="nav.backup"></h1><span class="chip" data-i18n="state.phase" data-n="6"></span></header>
+  <div class="card"><h2 data-i18n="state.planned"></h2><ul class="plan"><li data-i18n="backup.f1"></li><li data-i18n="backup.f2"></li><li data-i18n="backup.f3"></li><li data-i18n="backup.f4"></li></ul></div>
+</section>
+
+<section data-page="prefs" hidden>
+  <header class="page-head"><h1 data-i18n="nav.prefs"></h1></header>
+  <div class="grid">
+    <div class="card"><h2 data-i18n="lang.title"></h2><p class="muted" data-i18n="lang.current"></p></div>
+    <div class="card"><h2 data-i18n="prefs.storage"></h2><p id="storage-status" class="status"></p><p class="muted" data-i18n="prefs.noSync"></p>
+      <button type="button" id="check-btn" class="btn" data-i18n="prefs.runCheck"></button>
+      <p id="check-result" class="status" role="status"></p></div>
+    <form id="amount-form" class="card" novalidate><h2 data-i18n="amount.title"></h2><p class="muted" data-i18n="amount.help"></p>
+      <label for="amount-input" data-i18n="amount.label"></label>
+      <input id="amount-input" inputmode="decimal" autocomplete="off" dir="ltr" aria-describedby="amount-result">
+      <button type="submit" class="btn primary" data-i18n="amount.button"></button>
+      <p id="amount-result" class="status" role="status"></p></form>
+    <div class="card"><h2 data-i18n="reset.title"></h2><p class="muted" data-i18n="reset.help"></p>
+      <button type="button" id="reset-btn" class="btn" data-i18n="reset.button"></button></div>
+  </div>
+</section>
+</main>
+<nav id="tabbar" class="tabbar" data-i18n-aria="a11y.mainNav"></nav>
+</div>
+
+<dialog id="more-dialog" class="sheet">
+  <div id="more-links"></div>
+  <button type="button" id="more-close" class="btn" data-i18n="dialog.close"></button>
+</dialog>
+<dialog id="confirm-dialog">
+  <h2 data-i18n="reset.title"></h2><p data-i18n="reset.confirm"></p>
+  <div class="actions"><button type="button" id="confirm-no" class="btn" data-i18n="dialog.cancel" autofocus></button>
+  <button type="button" id="confirm-yes" class="btn primary" data-i18n="dialog.confirm"></button></div>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* Translations. Every UI string lives here; user-entered data is never translated. */
+(function (root) {
+  'use strict';
+  const D = {
+    // key: [Arabic, English]
+    'app.name': ['حسابات | ACCOUNTS', 'ACCOUNTS'],
+    'app.tagline': ['إدارة الحسابات والكاش', 'Accounts and cash management'],
+    'app.stage': ['نسخة محلية · المرحلة 1', 'Local build · Phase 1'],
+    'a11y.skip': ['انتقل إلى المحتوى', 'Skip to content'],
+    'a11y.mainNav': ['القائمة الرئيسية', 'Main menu'],
+    'lang.button': ['EN', 'AR'],
+    'lang.switch': ['التبديل إلى الإنجليزية', 'Switch to Arabic'],
+    'lang.changed': ['تم تغيير اللغة إلى العربية', 'Language changed to English'],
+    'lang.title': ['اللغة', 'Language'],
+    'lang.current': ['اللغة الحالية: العربية (من اليمين إلى اليسار)', 'Current language: English (left to right)'],
+
+    'nav.dashboard': ['الرئيسية', 'Home'],
+    'nav.accounts': ['الأسماء والحسابات', 'Names & accounts'],
+    'nav.accountsShort': ['الأسماء', 'Names'],
+    'nav.monthly': ['الاستحقاقات الشهرية', 'Monthly dues'],
+    'nav.monthlyShort': ['الشهري', 'Monthly'],
+    'nav.cash': ['الكاش', 'Cash'],
+    'nav.ledger': ['سجل الحركات', 'Transaction log'],
+    'nav.reports': ['التقارير', 'Reports'],
+    'nav.backup': ['النسخ الاحتياطي', 'Backup'],
+    'nav.prefs': ['الإعدادات والفحص', 'Settings & checks'],
+    'nav.more': ['المزيد', 'More'],
+
+    'state.notYet': ['غير مفعّل بعد', 'Not active yet'],
+    'state.phase': ['يُبنى في المرحلة {n}', 'Built in phase {n}'],
+    'state.planned': ['ما ستحتويه هذه الصفحة', 'What this page will contain'],
+    'state.noData': ['هذه النسخة لا تحفظ أي بيانات مالية بعد. لا تعتمد عليها لتسجيل حساباتك.', 'This build does not store any financial data yet. Do not rely on it to record your accounts.'],
+
+    'dash.title': ['لوحة التحكم', 'Dashboard'],
+    'dash.cash': ['رصيد الكاش الحالي', 'Current cash balance'],
+    'dash.cashFormula': ['المقبوض فعلياً − المدفوع فعلياً', 'Cash actually received − cash actually paid'],
+    'dash.received': ['إجمالي المقبوض الفعلي', 'Total cash received'],
+    'dash.paid': ['إجمالي المدفوع الفعلي', 'Total cash paid'],
+    'dash.agreements': ['المبالغ المتفق عليها', 'Agreed amounts'],
+    'dash.agreed': ['إجمالي المبالغ المتفق عليها', 'Total agreed amounts'],
+    'dash.remaining': ['إجمالي المبالغ المتبقية', 'Total remaining'],
+    'dash.monthly': ['الحسابات الشهرية', 'Monthly accounts'],
+    'dash.dues': ['إجمالي الاستحقاقات الشهرية', 'Total monthly dues'],
+    'dash.shortfall': ['إجمالي النقص المتراكم', 'Total accumulated shortfall'],
+    'dash.directory': ['السجل', 'Directory'],
+    'dash.names': ['عدد الأسماء', 'Number of names'],
+    'dash.count': ['عدد الحسابات', 'Number of accounts'],
+    'dash.charts': ['الرسوم البيانية', 'Charts'],
+    'dash.chartsNote': ['المقبوض مقابل المدفوع، وحركة الكاش، وتطور النقص، وتوزيع الحسابات. تُبنى في المرحلة 5.', 'Received vs paid, cash flow, shortfall trend and account distribution. Built in phase 5.'],
+
+    'accounts.f1': ['إضافة اسم وتعديله دون المساس بالسجلات القديمة', 'Add and rename people without altering past records'],
+    'accounts.f2': ['أكثر من حساب للاسم الواحد، من أحد النوعين أو كليهما', 'Several accounts per name, of either type or both'],
+    'accounts.f3': ['أرشفة الحساب واستعادته', 'Archive and restore accounts'],
+    'accounts.f4': ['البحث وصفحة تفاصيل لكل اسم', 'Search and a detail page for each name'],
+    'monthly.f1': ['استحقاق واحد فقط لكل حساب في كل شهر', 'Only one due per account per month'],
+    'monthly.f2': ['أكثر من دفعة في الشهر نفسه', 'Several payments within one month'],
+    'monthly.f3': ['تسوية نقص الأشهر السابقة في حركة مستقلة', 'Settling past shortfall as a separate transaction'],
+    'monthly.f4': ['المستحق والمدفوع ونقص الشهر والنقص المتراكم', 'Due, paid, monthly shortfall and accumulated shortfall'],
+    'cash.f1': ['تسجيل القبض الفعلي والدفع الفعلي', 'Record cash received and cash paid'],
+    'cash.f2': ['ربط كل حركة باسم وحساب', 'Link every transaction to a name and an account'],
+    'cash.f3': ['منع تسجيل الدفعة نفسها مرتين', 'Block recording the same payment twice'],
+    'cash.rules': ['قواعد الكاش الإلزامية', 'Mandatory cash rules'],
+    'cash.r1': ['المبلغ المتفق عليه ليس كاشاً مقبوضاً.', 'An agreed amount is not cash received.'],
+    'cash.r2': ['الاستحقاق الشهري والنقص ليسا كاشاً.', 'A monthly due or a shortfall is not cash.'],
+    'cash.r3': ['الخصم والتسوية المحاسبية ليسا قبضاً.', 'A discount or an accounting settlement is not a receipt.'],
+    'cash.r4': ['لا يدخل مبلغ في الرصيد إلا بتسجيل قبض فعلي.', 'Money enters the balance only when a cash receipt is recorded.'],
+    'ledger.f1': ['البحث والتصفية بالاسم والنوع والتاريخ، مع الترتيب', 'Search, filter by name, type and date, and sort'],
+    'ledger.f2': ['عكس الحركة بحركة جديدة مع بقاء الأصلية', 'Reverse with a new entry while keeping the original'],
+    'ledger.f3': ['سجل التعديلات والتدقيق', 'Change and audit history'],
+    'ledger.f4': ['تصدير CSV وExcel والطباعة', 'CSV and Excel export, and printing'],
+    'reports.f1': ['المبالغ المتفق عليها والمتبقي', 'Agreed amounts and remaining balances'],
+    'reports.f2': ['الاستحقاقات الشهرية والنقص المتراكم', 'Monthly dues and accumulated shortfall'],
+    'reports.f3': ['المقبوضات والمدفوعات ورصيد الكاش', 'Receipts, payments and cash balance'],
+    'reports.f4': ['تقرير شامل، مع التصفية والتصدير', 'Full report with filters and export'],
+    'backup.f1': ['تصدير كامل للبيانات بصيغة JSON', 'Full JSON data export'],
+    'backup.f2': ['التحقق من سلامة النسخة قبل استيرادها', 'Integrity check before import'],
+    'backup.f3': ['منع الاستيراد المكرر', 'Block duplicate imports'],
+    'backup.f4': ['تأكيد قبل الاستبدال، مع إمكانية الاستعادة', 'Confirm before replacing, with recovery'],
+
+    'prefs.storage': ['الحفظ على هذا الجهاز', 'Saving on this device'],
+    'prefs.storageOk': ['المتصفح يسمح بالحفظ. المحفوظ حالياً هو اختيار اللغة فقط.', 'This browser allows saving. Only the language choice is saved right now.'],
+    'prefs.storageBad': ['المتصفح يمنع الحفظ هنا، ولن يبقى اختيار اللغة بعد الإغلاق. جرّب فتح النظام في متصفح عادي خارج وضع التصفح الخاص.', 'This browser blocks saving here, so the language choice will be lost on close. Try a regular browser outside private mode.'],
+    'prefs.noSync': ['لا توجد مزامنة بين الأجهزة. كل جهاز ومتصفح مستقل عن غيره.', 'There is no sync between devices. Each device and browser is separate.'],
+    'prefs.runCheck': ['تشغيل فحص الحفظ', 'Run storage check'],
+    'prefs.checkOk': ['نجح الفحص: تمت الكتابة والقراءة والمسح.', 'Check passed: write, read and delete all worked.'],
+    'prefs.checkFail': ['فشل الفحص: تعذّر الحفظ على هذا المتصفح.', 'Check failed: this browser could not save.'],
+    'amount.title': ['تجربة إدخال المبلغ', 'Try amount entry'],
+    'amount.help': ['تجربة لقواعد التحقق فقط. لا يُحفظ المبلغ.', 'This only tests the validation rules. The amount is not saved.'],
+    'amount.label': ['المبلغ بالريال', 'Amount in SAR'],
+    'amount.button': ['تحقق من المبلغ', 'Check amount'],
+    'amount.ok': ['مبلغ صحيح: {value}', 'Valid amount: {value}'],
+    'err.empty': ['أدخل المبلغ.', 'Enter an amount.'],
+    'err.negative': ['لا يُقبل مبلغ سالب. أدخل مبلغاً أكبر من صفر.', 'Negative amounts are not accepted. Enter an amount above zero.'],
+    'err.zero': ['يجب أن يكون المبلغ أكبر من صفر.', 'The amount must be above zero.'],
+    'err.decimals': ['المسموح خانتان عشريتان كحد أقصى.', 'Use no more than two decimal places.'],
+    'err.format': ['صيغة المبلغ غير صحيحة. مثال صحيح: 10,000.50', 'The amount format is not valid. Example: 10,000.50'],
+    'err.tooLarge': ['المبلغ أكبر من الحد المسموح.', 'The amount is above the allowed limit.'],
+    'reset.title': ['إعادة ضبط الإعدادات', 'Reset settings'],
+    'reset.help': ['تمسح اختيار اللغة المحفوظ وتعود إلى العربية.', 'Clears the saved language choice and returns to Arabic.'],
+    'reset.button': ['إعادة الضبط', 'Reset'],
+    'reset.confirm': ['هل تريد مسح اختيار اللغة المحفوظ؟', 'Clear the saved language choice?'],
+    'reset.done': ['تمت إعادة ضبط الإعدادات.', 'Settings were reset.'],
+    'reset.fail': ['تعذّرت إعادة الضبط لأن المتصفح منع الحفظ.', 'Reset failed because the browser blocked saving.'],
+    'dialog.confirm': ['تأكيد', 'Confirm'],
+    'dialog.cancel': ['إلغاء', 'Cancel'],
+    'dialog.close': ['إغلاق', 'Close'],
+    'cur.sar': ['ر.س', 'SAR']
+  };
+  const LANGS = { ar: { index: 0, dir: 'rtl' }, en: { index: 1, dir: 'ltr' } };
+  function normalize(lang) { return Object.prototype.hasOwnProperty.call(LANGS, lang) ? lang : 'ar'; }
+  function t(lang, key, params) {
+    const row = D[key];
+    if (!row) return key;
+    return row[LANGS[normalize(lang)].index].replace(/\{(\w+)\}/g, (m, p) => (params && p in params ? String(params[p]) : m));
+  }
+  const api = { dictionary: D, t, normalize, dir: (l) => LANGS[normalize(l)].dir };
+  root.ACC = root.ACC || {};
+  root.ACC.i18n = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Input validation. Money is held as an integer number of halalas, never as a float. */
+(function (root) {
+  'use strict';
+  const MAX_MINOR = 100000000000000; // 1 trillion SAR, well inside Number.MAX_SAFE_INTEGER
+
+  function toLatinDigits(s) {
+    return String(s)
+      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06F0));
+  }
+
+  function parseAmount(input) {
+    const fail = (error) => ({ ok: false, error });
+    let s = toLatinDigits(input == null ? '' : input)
+      .replace(/[‎‏؜]/g, '')   // invisible direction marks from copy/paste
+      .replace(/٫/g, '.')                // Arabic decimal separator
+      .replace(/٬/g, ',')                // Arabic thousands separator
+      .trim();
+    if (s === '') return fail('err.empty');
+    if (/^[-−]|[-−]$/.test(s)) return fail('err.negative');
+    // Commas are accepted only as correct thousands groups, so "1,5" is never read as 15.
+    if (!/^(\d+|\d{1,3}(,\d{3})+)(\.\d+)?$/.test(s)) return fail('err.format');
+    const [whole, frac = ''] = s.replace(/,/g, '').split('.');
+    if (frac.length > 2) return fail('err.decimals');
+    const minor = Number(whole) * 100 + Number((frac + '00').slice(0, 2));
+    if (!Number.isSafeInteger(minor) || minor > MAX_MINOR) return fail('err.tooLarge');
+    if (minor === 0) return fail('err.zero');
+    return { ok: true, minor };
+  }
+
+  function formatMinor(minor) {
+    if (!Number.isSafeInteger(minor)) throw new TypeError('minor must be a safe integer');
+    const abs = Math.abs(minor);
+    const whole = String(Math.floor(abs / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (minor < 0 ? '-' : '') + whole + '.' + String(abs % 100).padStart(2, '0');
+  }
+
+  const api = { parseAmount, formatMinor, toLatinDigits, MAX_MINOR };
+  root.ACC = root.ACC || {};
+  root.ACC.validation = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Storage. Phase 1 saves preferences only. Financial records arrive in phase 2. */
+(function (root) {
+  'use strict';
+  const KEY = 'accounts.prefs.v1';
+  const PROBE = 'accounts.probe';
+
+  function create(getBackend) {
+    let memory = {}; // used when the browser blocks storage
+
+    function selfTest() {
+      try {
+        const b = getBackend(), value = String(Date.now());
+        b.setItem(PROBE, value);
+        const same = b.getItem(PROBE) === value;
+        b.removeItem(PROBE);
+        return same && b.getItem(PROBE) === null;
+      } catch (e) { return false; }
+    }
+    function load() {
+      try {
+        const raw = getBackend().getItem(KEY);
+        if (raw === null) return Object.assign({}, memory);
+        const data = JSON.parse(raw);
+        return data && data.schema === 1 && data.prefs ? Object.assign({}, data.prefs) : {};
+      } catch (e) { return Object.assign({}, memory); }
+    }
+    function save(patch) {
+      const prefs = Object.assign(load(), patch);
+      memory = prefs;
+      try { getBackend().setItem(KEY, JSON.stringify({ schema: 1, prefs })); return true; }
+      catch (e) { return false; }
+    }
+    function reset() {
+      try { getBackend().removeItem(KEY); memory = {}; return true; }
+      catch (e) { return false; }
+    }
+    return { selfTest, load, save, reset };
+  }
+
+  const api = { create, KEY };
+  root.ACC = root.ACC || {};
+  root.ACC.storage = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Application shell: routing, language, dialogs and messages. */
+(function () {
+  'use strict';
+  const { i18n, validation, storage } = window.ACC;
+  const store = storage.create(() => window.localStorage);
+  let lang = i18n.normalize(store.load().lang);
+  const messages = {}; // result lines that must be re-translated on language change
+
+  const $ = (s, el) => (el || document).querySelector(s);
+  const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+  const t = (k, p) => i18n.t(lang, k, p);
+
+  const ICONS = {
+    dashboard: 'M4 11l8-7 8 7v9h-5v-6H9v6H4z',
+    accounts: 'M9 11a4 4 0 100-8 4 4 0 000 8zm-7 9c0-4 3-6 7-6s7 2 7 6M16 4a4 4 0 010 7m2 3c3 .6 4 3 4 6',
+    monthly: 'M4 6h16v14H4zM4 10h16M8 3v5m8-5v5',
+    cash: 'M3 7h18v11H3zM12 15a2.5 2.5 0 100-5 2.5 2.5 0 000 5z',
+    ledger: 'M6 3h13v18H6zM9 8h7M9 12h7M9 16h4',
+    reports: 'M4 20h16M7 20v-7m5 7V5m5 15v-10',
+    backup: 'M12 4v11m-5-5l5 5 5-5M5 20h14',
+    prefs: 'M4 7h10m4 0h2M4 17h4m4 0h8M16 5v4M10 15v4',
+    more: 'M5 12h.01M12 12h.01M19 12h.01'
+  };
+  const icon = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[n]}"/></svg>`;
+  const ROUTES = ['dashboard', 'accounts', 'monthly', 'cash', 'ledger', 'reports', 'backup', 'prefs'];
+  const TABS = ['dashboard', 'accounts', 'monthly', 'cash'];
+  const SHORT = { accounts: 'nav.accountsShort', monthly: 'nav.monthlyShort' };
+
+  function link(route, key) {
+    return `<a href="#${route}" data-route="${route}">${icon(route)}<span data-i18n="${key}"></span></a>`;
+  }
+  function buildNav() {
+    $('#sidebar-links').innerHTML = ROUTES.map((r) => link(r, 'nav.' + r)).join('');
+    $('#tabbar').innerHTML = TABS.map((r) => link(r, SHORT[r] || 'nav.' + r)).join('') +
+      `<button type="button" id="more-btn" aria-haspopup="dialog">${icon('more')}<span data-i18n="nav.more"></span></button>`;
+    $('#more-links').innerHTML = ROUTES.filter((r) => !TABS.includes(r)).map((r) => link(r, 'nav.' + r)).join('');
+  }
+
+  function render() {
+    const html = document.documentElement;
+    html.lang = lang;
+    html.dir = i18n.dir(lang);
+    document.title = t('app.name');
+    $$('[data-i18n]').forEach((el) => {
+      el.textContent = t(el.dataset.i18n, el.dataset.n ? { n: el.dataset.n } : undefined);
+    });
+    $$('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+    Object.keys(messages).forEach(paint);
+    renderStorage();
+  }
+  function renderStorage() {
+    const ok = store.selfTest();
+    const el = $('#storage-status');
+    el.textContent = t(ok ? 'prefs.storageOk' : 'prefs.storageBad');
+    el.dataset.state = ok ? 'ok' : 'bad';
+    $('#storage-banner').hidden = ok;
+  }
+
+  function paint(id) {
+    const m = messages[id], el = document.getElementById(id);
+    el.textContent = m ? t(m.key, m.params) : '';
+    el.dataset.state = m ? m.state : '';
+  }
+  function say(id, key, state, params) { messages[id] = { key, state, params }; paint(id); }
+
+  let toastTimer;
+  function toast(key, state) {
+    say('toast', key, state);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { delete messages.toast; paint('toast'); }, 3500);
+  }
+
+  function setLang(next) {
+    lang = i18n.normalize(next);
+    const saved = store.save({ lang });
+    render();
+    toast(saved ? 'lang.changed' : 'prefs.checkFail', saved ? 'ok' : 'bad');
+  }
+
+  function route() {
+    const wanted = location.hash.slice(1);
+    const current = ROUTES.includes(wanted) ? wanted : 'dashboard';
+    $$('[data-page]').forEach((p) => { p.hidden = p.dataset.page !== current; });
+    $$('[data-route]').forEach((a) => {
+      if (a.dataset.route === current) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    $('#more-btn').classList.toggle('active', !TABS.includes(current));
+    if ($('#more-dialog').open) $('#more-dialog').close();
+    window.scrollTo(0, 0);
+  }
+
+  function init() {
+    buildNav();
+    $('#lang-btn').addEventListener('click', () => setLang(lang === 'ar' ? 'en' : 'ar'));
+    $('#more-btn').addEventListener('click', () => $('#more-dialog').showModal());
+    $('#more-close').addEventListener('click', () => $('#more-dialog').close());
+    // Close on tap too: tapping the current page's link fires no hashchange.
+    $('#more-links').addEventListener('click', (e) => { if (e.target.closest('a')) $('#more-dialog').close(); });
+    $('#check-btn').addEventListener('click', () => {
+      const ok = store.selfTest();
+      say('check-result', ok ? 'prefs.checkOk' : 'prefs.checkFail', ok ? 'ok' : 'bad');
+    });
+    $('#amount-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const r = validation.parseAmount($('#amount-input').value);
+      $('#amount-input').setAttribute('aria-invalid', String(!r.ok));
+      if (r.ok) say('amount-result', 'amount.ok', 'ok', { value: validation.formatMinor(r.minor) });
+      else say('amount-result', r.error, 'bad');
+    });
+    // The confirm step is built into the page: some embedded viewers block window.confirm().
+    $('#reset-btn').addEventListener('click', () => $('#confirm-dialog').showModal());
+    $('#confirm-no').addEventListener('click', () => $('#confirm-dialog').close());
+    $('#confirm-yes').addEventListener('click', () => {
+      $('#confirm-dialog').close();
+      const ok = store.reset();
+      if (ok) lang = 'ar';
+      render();
+      toast(ok ? 'reset.done' : 'reset.fail', ok ? 'ok' : 'bad');
+    });
+    window.addEventListener('hashchange', route);
+    render();
+    route();
+    document.documentElement.classList.add('ready');
+  }
+  init();
+})();
+</script>
+</body>
+</html>
